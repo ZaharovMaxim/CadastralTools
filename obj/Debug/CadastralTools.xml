@@ -1,0 +1,181 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+CadastralTools
+</name>
+</assembly>
+<members>
+<member name="T:CadastralTools.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:CadastralTools.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:CadastralTools.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.DoesLineIntersectPolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Проверяет, пересекает ли полилиния полигон
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.IsLineInsidePolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Проверяет, находится ли полилиния полностью внутри полигона
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.DoesLineTouchPolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Проверяет, касается ли полилиния границы полигона
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.DoesLineCrossPolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Проверяет, пересекает ли полилиния границу полигона
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.GetIntersectionPoints(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Получает точки пересечения полилинии с полигоном
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.GetLineSegmentsInsidePolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Получает сегменты полилинии, которые находятся внутри полигона
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.GetLengthInsidePolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Получает длину полилинии внутри полигона
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.GetPercentageInsidePolygon(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon)">
+ Получает процент полилинии внутри полигона
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.DoesLineCrossAtPoint(NetTopologySuite.Geometries.LineString,NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.Point)">
+ Проверяет, пересекает ли полилиния границу полигона в указанной точке
+</member>
+<member name="M:CadastralTools.FuncNetTopologySuite.GenerateTestPointsInsidePolygon(NetTopologySuite.Geometries.Polygon,System.Int32)">
+ Генерирует тестовые точки внутри полигона
+</member>
+<member name="M:CadastralTools.PolygonLineIntersectionProcessor.SplitPolygonWithLine(NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.LineString)">
+ <summary>
+ Основной метод: разбивает полигон полилинией и возвращает все образовавшиеся полигоны
+ </summary>
+</member>
+<member name="M:CadastralTools.PolygonLineIntersectionProcessor.SplitPolygonWithLineAdvanced(NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.LineString)">
+ <summary>
+ Альтернативный метод: использует разность и объединение для более точного разбиения
+ </summary>
+</member>
+<member name="M:CadastralTools.PolygonLineIntersectionProcessor.GetPolygonsOnBothSides(NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.LineString)">
+ <summary>
+ Метод для получения полигонов по разные стороны от полилинии
+ </summary>
+</member>
+<member name="M:CadastralTools.PolygonIntersectionInnerProcessor.GetIntersectionPolygons(NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.Polygon)">
+ <summary>
+ Основной метод: возвращает только полигоны из зоны пересечения
+ </summary>
+</member>
+<member name="M:CadastralTools.PolygonIntersectionInnerProcessor.GetIntersectionPolygonsWithCheck(NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.Polygon)">
+ <summary>
+ Метод с проверкой на существование пересечения
+ </summary>
+</member>
+<member name="M:CadastralTools.PolygonIntersectionInnerProcessor.GetIntersectionPolygonsWithFilter(NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.Polygon,System.Double)">
+ <summary>
+ Метод с фильтрацией по минимальной площади
+ </summary>
+</member>
+<member name="M:CadastralTools.PolygonIntersectionInnerProcessor.GetMultipleIntersections(System.Collections.Generic.List{System.ValueTuple{NetTopologySuite.Geometries.Polygon,NetTopologySuite.Geometries.Polygon}})">
+ <summary>
+ Получает пересечение для нескольких пар полигонов
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.LoadRootStructure(System.String,System.Windows.Forms.TreeView)">
+ <summary>
+ Загружает только корневые папки
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.LoadFolderContentOnly(System.String,System.Windows.Forms.TreeNode,System.String)">
+ <summary>
+ Загружает только один уровень папки (БЕЗ РЕКУРСИИ)
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.LoadFolderOnClick(System.Windows.Forms.TreeNode)">
+ <summary>
+ Загружает содержимое папки при клике (только один уровень)
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.GetFolderContent(System.String)">
+ <summary>
+ Получает содержимое папки
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.FindFolderIdByPathSimple(System.String,System.String)">
+ <summary>
+ Упрощённый поиск ID папки по пути (без рекурсии)
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.DownloadSelectedNode(System.Windows.Forms.TreeView,System.String)">
+ <summary>
+ Скачивает выбранный элемент
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.DownloadFolderRecursive(System.Windows.Forms.TreeNode,System.String)">
+ <summary>
+ Рекурсивно скачивает папку
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.DownloadFileById(System.String,System.String,System.String)">
+ <summary>
+ Скачивает файл по ID
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.FindFileIdByPathSimple(System.String,System.String)">
+ <summary>
+ Находит ID файла по пути
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.IsFolder(System.String)">
+ <summary>
+ Проверяет, является ли объект папкой
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveExplorer.ExtractFolderIdFromUrl(System.String)">
+ <summary>
+ Извлекает ID папки из URL
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.TestFolderAccess(System.String)">
+ <summary>
+ Проверяет доступность папки и выводит список файлов
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.ParseFolderContent(System.String)">
+ <summary>
+ Парсит содержимое папки (упрощённая версия)
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.FindFileNameNearMatch(System.String,System.Int32)">
+ <summary>
+ Находит имя файла рядом с ссылкой
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.FindFolderNameNearMatch(System.String,System.Int32)">
+ <summary>
+ Находит имя папки
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.IsFolder(System.String)">
+ <summary>
+ Проверяет, является ли объект папкой
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.FindFileIdByPath(System.String,System.String)">
+ <summary>
+ Находит ID файла по пути
+ </summary>
+</member>
+<member name="M:CadastralTools.GoogleDriveTester.ExtractFolderIdFromUrl(System.String)">
+ <summary>
+ Извлекает ID папки из URL
+ </summary>
+</member>
+</members>
+</doc>
