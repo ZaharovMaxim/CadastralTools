@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Восстановленная схема puomCommon v1.0.0.
+     Типы objectLocationType, GeocodeType, objectBuilderType, objectOwnerType,
+     DocumentCommonType, ObjectType восстановлены по образцу Onli.xml и
+     документации ОНЛИ_xsd_v1.0.0.docx (типы субъектов переиспользуются
+     из commonReport.xsd). -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://rosleshoz.gov.ru/fgis-lk/common/puomCommon/types/1.0.0"
+	xmlns:tns="http://rosleshoz.gov.ru/fgis-lk/common/puomCommon/types/1.0.0"
+	xmlns:comR="http://rosleshoz.gov.ru/fgis-lk/common/commonReport/types/2.1"
+	xmlns:cmplx="http://rosleshoz.gov.ru/fgis-lk/common/complex/types/2.0"
+	elementFormDefault="qualified">
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/commonReport/types/2.1" schemaLocation="common2/commonReport.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/complex/types/2.0" schemaLocation="common2/complexTypes.xsd"/>
+
+	<xs:simpleType name="ObjectType">
+		<xs:annotation>
+			<xs:documentation>Вид записи (принимает значение puomOnli)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="puomOnli"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="objectLocationType">
+		<xs:annotation>
+			<xs:documentation>Местоположение объекта</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="locationRegion" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Регион (субъект Российской Федерации)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="locationAdmRegion" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Административный район</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="locationDistrict" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Идентификатор муниципального образования по ФИАС</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="locationForestryNo" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Лесничество</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="locationSteadForestryNo" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Участковое лесничество</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="locationQuarterNo" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Квартал</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="locationTaxationPiece" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Выдел</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="GeocodeType">
+		<xs:annotation>
+			<xs:documentation>Геокод объекта</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="lon" type="xs:decimal">
+				<xs:annotation>
+					<xs:documentation>Долгота</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lat" type="xs:decimal">
+				<xs:annotation>
+					<xs:documentation>Широта</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="objectBuilderType">
+		<xs:annotation>
+			<xs:documentation>Застройщик объекта</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="comR:ForestUserType"/>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="objectOwnerType">
+		<xs:annotation>
+			<xs:documentation>Лицо, владеющее объектом на праве собственности или ином законном основании</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="comR:ForestUserType"/>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="DocumentCommonType">
+		<xs:annotation>
+			<xs:documentation>Реквизиты документа</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="documentName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Наименование документа</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="documentData" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>Дата документа</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="documentNumber" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Номер документа</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="person" type="cmplx:PersonNameType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Фамилия, имя, отчество лица, подписавшего документ</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="documentStartDate" type="xs:date" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Дата начала действия документа</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="documentAttachment" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Вложение (приложение к документу)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

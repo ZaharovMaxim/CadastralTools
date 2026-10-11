@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:tns="http://rosleshoz.gov.ru/fgis-lk/common/enums/nameProtectedForests/types/2.1.5" elementFormDefault="qualified" targetNamespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/nameProtectedForests/types/2.1.5" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!--created: 2026-01-27T14:52:05+0300-->
+    <xs:simpleType name="NameProtectedForestsKindEType">
+        <xs:annotation>
+            <xs:documentation>Наименование особо защитных участков лесов</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="30600001">
+                <xs:annotation>
+                    <xs:documentation>Архивы клонов плюсовых деревьев</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600003">
+                <xs:annotation>
+                    <xs:documentation>Географические культуры</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600004">
+                <xs:annotation>
+                    <xs:documentation>Испытательные культуры</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600005">
+                <xs:annotation>
+                    <xs:documentation>Лесосеменные плантации</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600006">
+                <xs:annotation>
+                    <xs:documentation>Маточные плантации</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600007">
+                <xs:annotation>
+                    <xs:documentation>Плюсовые деревья</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600008">
+                <xs:annotation>
+                    <xs:documentation>Плюсовые насаждения</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600009">
+                <xs:annotation>
+                    <xs:documentation>Популяционно-экологические культуры</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30600010">
+                <xs:annotation>
+                    <xs:documentation>Постоянные лесосеменные участки</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700001">
+                <xs:annotation>
+                    <xs:documentation>Берегозащитные, почвозащитные участки лесов, расположенные вдоль водных объектов, склонов оврагов</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700002">
+                <xs:annotation>
+                    <xs:documentation>Опушки лесов, граничащие с безлесными пространствами</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700003">
+                <xs:annotation>
+                    <xs:documentation>Лесосеменные плантации, постоянные лесосеменные участки и другие объекты лесного семеноводства</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700004">
+                <xs:annotation>
+                    <xs:documentation>Заповедные лесные участки</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700005">
+                <xs:annotation>
+                    <xs:documentation>Участки лесов с наличием реликтовых и эндемичных растений</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700006">
+                <xs:annotation>
+                    <xs:documentation>Места обитания редких и находящихся под угрозой исчезновения диких животных</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700007">
+                <xs:annotation>
+                    <xs:documentation>Объекты природного наследия</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700008">
+                <xs:annotation>
+                    <xs:documentation>Полосы леса в горах вдоль верхней их границы с безлесным пространством</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700009">
+                <xs:annotation>
+                    <xs:documentation>Небольшие участки лесов, расположенные среди безлесных пространств</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700010">
+                <xs:annotation>
+                    <xs:documentation>Защитные полосы лесов вдоль гребней и линий водоразделов</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700011">
+                <xs:annotation>
+                    <xs:documentation>Участки лесов на крутых горных склонах</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700012">
+                <xs:annotation>
+                    <xs:documentation>Особо охранные части особо охраняемых природных территорий</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700013">
+                <xs:annotation>
+                    <xs:documentation>Леса в охранных зонах особо охраняемой природной территории</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700014">
+                <xs:annotation>
+                    <xs:documentation>Участки лесов вокруг глухариных токов</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700015">
+                <xs:annotation>
+                    <xs:documentation>Участки лесов вокруг естественных солонцов</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700016">
+                <xs:annotation>
+                    <xs:documentation>Медоносные участки лесов</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700017">
+                <xs:annotation>
+                    <xs:documentation>Участки лесов вокруг лечебных и оздоровительных учреждений</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700018">
+                <xs:annotation>
+                    <xs:documentation>Участки лесов вокруг поселков городского типа, сельских населенных пунктов</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700051">
+                <xs:annotation>
+                    <xs:documentation>Объекты лесного семеноводства</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30700118">
+                <xs:annotation>
+                    <xs:documentation>Лесосеменные участки</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

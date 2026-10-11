@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://rosleshoz.gov.ru/fgis-lk/common/puomOnli/1.0.0" xmlns:comR="http://rosleshoz.gov.ru/fgis-lk/common/commonReport/types/2.1" xmlns:poumC="http://rosleshoz.gov.ru/fgis-lk/common/puomCommon/types/1.0.0" xmlns:pf="http://rosleshoz.gov.ru/fgis-lk/common/enums/typeRightForestPlot/types/2.0" xmlns:st="http://rosleshoz.gov.ru/fgis-lk/common/simple/types/2.0.0" xmlns:pcl="http://rosleshoz.gov.ru/fgis-lk/common/enums/coordinateSystem/types/2.1" xmlns:spatprim="http://rosleshoz.gov.ru/fgis-lk/common/enums/spatialPrimitive/types/2.0" xmlns:ns1="http://rosleshoz.gov.ru/fgis-lk/common/poumOnli/1.0" xmlns:ns2="http://rosleshoz.gov.ru/fgis-lk/common/poumOnli/1.0.0" targetNamespace="http://rosleshoz.gov.ru/fgis-lk/common/poumOnli/1.0.0" elementFormDefault="qualified">
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/commonReport/types/2.1" schemaLocation="common2/commonReport.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/puomCommon/types/1.0.0" schemaLocation="puomCommon_v1.0.0.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/typeRightForestPlot/types/2.0" schemaLocation="common2/dTypeRightForestPlotKindTypes.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/simple/types/2.0.0" schemaLocation="common2/simpleTypes-2.0.0.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/coordinateSystem/types/2.1" schemaLocation="common2/dCoordinateSystemKindTypes.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/spatialPrimitive/types/2.0" schemaLocation="common2/dSpatialPrimitiveKindTypes.xsd"/>
+	<!-- Определение основного элемента с параметрами -->
+	<xs:element name="PropertyObject">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="documentTypeCode" type="poumC:ObjectType">
+					<xs:annotation>
+						<xs:documentation>Вид записи</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectCadastrNo" type="st:String128SType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Кадастровый номер объекта недвижимости</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectPurpose" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Назначение объекта недвижимости</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectForestryNo" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Номер лесничества, в границе которого располагается объект</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectForestPlotNo" type="xs:string" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Номер лесного участка, на котором расположен объект</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectFiasLocation" type="xs:string" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Местоположение объекта по ФИАС</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectLocation" type="poumC:objectLocationType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Местоположение объекта</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectGeocode" type="poumC:GeocodeType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Геокод объекта</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="objectBuilder" type="poumC:objectBuilderType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Застройщик объекта</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectBuildingPermissionNo" type="poumC:DocumentCommonType">
+					<xs:annotation>
+						<xs:documentation>Разрешение на строительство</xs:documentation>
+					</xs:annotation>
+				</xs:element>													
+				<xs:element name="objectOwner" type="poumC:objectOwnerType">
+					<xs:annotation>
+						<xs:documentation>Лицо, владеющее объектом на праве собственности или ином законном основании</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectTypeRight" type="pf:TypeRightForestPlotKindEType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Вид права или иное законное основание владения объектом</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="objectDocumentary" type="poumC:DocumentCommonType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Документ - основание возникновения права собственности или иного законного основания владения объектом</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="CoordinateSystem" type="pcl:CoordinateSystemKindEType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Система координат</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="typeUnit" type="spatprim:SpatialPrimitiveKindEType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Вид пространственного примитива</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="OrdinateType" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>Сведения о точках границ</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="x" type="xs:decimal">
+								<xs:annotation>
+									<xs:documentation>Координата X</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="y" type="xs:decimal">
+								<xs:annotation>
+									<xs:documentation>Координата Y</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="deltaGeopoint" type="xs:decimal" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Погрешность</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

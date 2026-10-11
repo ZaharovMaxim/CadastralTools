@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>K:\Civil3DToolsUtility\NET\</OutputPath>
+    <OutputPath>..\..\NET\</OutputPath>
     <DocumentationFile>CadastralTools.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -51,7 +51,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
-      <HintPath>D:\NET\Topomatic Robur Road 16.0\NetTopologySuite.dll</HintPath>
+      <HintPath>..\..\NET\NetTopologySuite.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -183,6 +183,9 @@
     <EmbeddedResource Include="WinForms\CadastralForms\FormSelectObject.resx">
       <DependentUpon>FormSelectObject.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\ctlForestUserWF.resx">
+      <DependentUpon>ctlForestUserWF.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WinForms\FormUpdateProgram.resx">
       <DependentUpon>FormUpdateProgram.vb</DependentUpon>
     </EmbeddedResource>
@@ -199,6 +202,451 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="WinForms\ForestForms\frmEditTaxation.Designer.vb">
+      <DependentUpon>frmEditTaxation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmEditTaxation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmOnli.Designer.vb">
+      <DependentUpon>frmOnli.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmOnli.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmTaxationDescription.Designer.vb">
+      <DependentUpon>frmTaxationDescription.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmTaxationDescription.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\ctlForestUserWF.Designer.vb">
+      <DependentUpon>ctlForestUserWF.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\ctlForestUserWF.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CivilForestProject\ClsEditTaxationXml.vb" />
+    <Compile Include="CivilForestProject\ClsOnliXml.vb" />
+    <Compile Include="CivilForestProject\ClsTaxationDescriptionXml.vb" />
+    <Compile Include="CivilForestProject\ClsTaxationDescriptionXmlWriter.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="WinForms\ForestForms\frmEditTaxation.resx">
+      <DependentUpon>frmEditTaxation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmOnli.resx">
+      <DependentUpon>frmOnli.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmTaxationDescription.resx">
+      <DependentUpon>frmTaxationDescription.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Onli.xml" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Onli_v1.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\puomCommon_v1.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\addressTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\attachmentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\commonReport.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\complexTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dConstituentEntityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dCoordinateSystemKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dCountryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dDistrictForestriesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dDocumentTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dSectionGlrKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dSellDocTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dSpatialPrimitiveKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dTreeNewKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dTypeRightForestPlotKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dTypesIdentityDocKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dUnitMeasurementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\documentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\objectSourceTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\simpleTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\simpleTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\subjectTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\taxationDescription.xslt" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\taxationDescription_v2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\Таксационное описание выделов лесотаксационных выделов.xml" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\addressTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\attachmentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\complexTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dAgeClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dAgeGroupKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dBonitetKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCategoryLandForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCategoryLandKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCompletenesSlayerKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dConditionHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dConstituentEntityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dContaminationLandsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCoordinateSystemKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCountryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCuttingGroupCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCuttingTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dDensityUndergrowthKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dDistrictForestriesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dDocumentTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dErosionDegreeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dErosionTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dFarmsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dFellingForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dForestResoursKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dForestryActivitiesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dGardenTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dGeodataExternalFormatKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dGeodataStorageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dLandTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dLocationTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dMarketabilityClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dMeasuresOZVLKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dMethodDeterminPointKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dNameObjectSeedProdKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dNameProtectedForestsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dOkpd2KindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dPurposeCreatedRoadKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dPurposeForestsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dQualityHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dReliefKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dRoadTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSeasonUseKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSellDocTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSlopeExposureKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSlopeSteepnessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSoilTypesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSpatialPrimitiveKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dStateForestPlantKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSwampTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTaxationCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTnVedWoodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTreeNewKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTrustworthinessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeForestConditionsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeForestFireKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeGardenPlantsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeOriginKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeVegetationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypesIdentityDocKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dUnitMeasurementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dUsageTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\documentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\popdContoursLocation_v0.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\simpleTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\stateForestRegisterExtractTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\subjectTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\editTaxationByVlscnOzul_v0.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\dDistrictForestriesKindTypes-2.1.5.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\dNameProtectedForestsKindTypes-2.1.5.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\dPurposeForestsKindTypes-2.1.2.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\simpleTypes-2.2.2.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CivilForestProject\xsdShemas\ProjectForestry\common\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CivilForestProject\ClsProjectForestryXml.vb" />
+    <Compile Include="CivilForestProject\ClsProjectForestryXmlWriter.vb" />
+    <Compile Include="WinForms\ForestForms\frmProjectForestry.Designer.vb">
+      <DependentUpon>frmProjectForestry.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmProjectForestry.vb">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="WinForms\ForestForms\frmProjectForestry.resx">
+      <DependentUpon>frmProjectForestry.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\projectForestry_v2.2.0.docx" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\projectForestry_v2.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\addressTypes-2.0.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\addressTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\addressTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\addressTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\areaForestCareType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\attachmentTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\attachmentTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\attachmentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\averageTaxationRatesType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\characteristicFireClassesType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\commonReport.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\commonType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\complexTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\complexTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\complexTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAdditionalDocumentKindTypes-2.0.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAdditionalDocumentKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAdditionalDocumentKindTypes-2.0.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAdditionalDocumentKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAfforestationCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAgeClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAgeGroupKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAgePeriodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dArrangementTreeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAttachmentTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dAvailabilityCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dBasisForChangeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dBonitetKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dBrokenTrunkKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCalculationMethodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCanopyTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCarbonStockKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCategoryLandForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCategoryLandKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCategorySuitabilityKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCategorySuitabilityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCausesDamageLossForKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCausesForestFireKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dClimateTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCompletenesSlayerKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCompositionSoilsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dConditionHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dConditionsProjectedMethodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dConformityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dConstituentEntityKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dConstituentEntityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dContaminationLandsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCoordinateSystemKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCoordinateSystemRecordKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCountryKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCountryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCuttingGroupCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCuttingTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dCuttingUsageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDamageGroupingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDamageIntensityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDeadWoodTypesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDeadwoodRotTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDecompositionDegreeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDegreeBrushwoodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDegreeCleaningKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDegreeCoverGroundKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDegreeCoverageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDegreeSoddingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDegreeUnevenAgeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDensityUndergrowthKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDiscrepancyKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDistributionDeadwoodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDistrictForestriesKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDistrictForestriesKindTypes-2024.04.12.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDistrictForestriesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDivisionExaminationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentKindKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentTypeKindTypes-2.1.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentTypeKindTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentTypeKindTypes-2.1.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentTypeKindTypes-2.1.2.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentTypeKindTypes-2.1.3.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dDocumentTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dEasementReasonKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dEasementReasonKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dErosionDegreeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dErosionTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dEvennessBreedsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dEventEvaluationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dExtendedStatusClearcutKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dExtentLichensTrunkKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dExtractBorderLocationIntoKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dFarmsKindTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dFarmsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dFederalDistricsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dFellingForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dFireHazardClassEType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestAreasKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestFacilitiesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestFloorThicknessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestMachineryEquipKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestNonInfrastructKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestOwnNeedsReasonKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestOwnNeedsReasonKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestResoursKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestryActivitiesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestryKindTypes-2.0.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestryKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestryKindTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestryKindTypes-2024.04.12.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dFormsOwnershipForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dGardenTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dGeodataExternalFormatKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dGeodataStorageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dGeodataUnitMeasurementMnemonicKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dGroupsOfCausesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dGroupsTreeSpeciesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dHarmfulOrganismsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dHeightClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dHeightUndergrowthKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dHotbedTipeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dIdDocumentKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dImpossibilityCuttingAreaKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dIndicatorsForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dIntensityForestFireKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dKindTransportKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dLandTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dLocationForestAreaKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dLocationTreeDamageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dLocationTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMachEquipMeasuresKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMarketabilityClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMeasuresOZVLKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMethodDeterminPointKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMethodDeterminPointRecordKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMonthKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMunicipalAreasKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dMunicipalAreasKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dNameObjectSeedProdKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dNameProtectedForestsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dNumberTiersStandKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dOkpd2KindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dOkvPokazKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dOriginOfInformationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dOtherTypesApplicantKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dOtherTypesApplicantKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPerformanceKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPestStagesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPhotoModeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPlacementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPlacementTreesPPPKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dProtectionMeasuresKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dProviderKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPublicEasementReasonKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPublicEasementReasonKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPurposeCreatedRoadKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPurposeForestsDocKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dPurposeForestsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dQualityHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dReasonTerminationKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dReliefKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dRoadTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dRumbDirectionKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSeasonUseKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSectionGlrKindTypes-2.0.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSectionGlrKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSectionGlrKindTypes-2.0.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSectionGlrKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSeedQualityClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSelectionCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSellDocTypeKindTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSellDocTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSettlementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSlopeExposureKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSlopeSteepnessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSoilMoistureKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSoilTypesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSpatialPrimitiveKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSpatialPrimitiveRecordKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSpecialCustomsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSpecialObjectsClearcutKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSpeciesRichnessTreeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStabilityClassesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStageDegradationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStageHotbatKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStateAuthorityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStateForestPlantKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStateServiceOptionNumberKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStateServiceOptionNumberKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStatusIufroKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStepsThicknessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dStumpCuttingAgeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSubjectsRFNameKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSubordinateAuthorityKindTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSubordinateAuthorityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSuitabilityCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dSwampTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTaxationCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTerzoneKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTierKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTimberDealKindKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTipeCauseOfRuinKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTipeGarbageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTipePestLpoKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTnVedKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTnVedWoodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dToForestDeclarationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTreeHeightRange.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTreeNewKindTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTreeNewKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTreePlacementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTreeSubspeciesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTrustworthinessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeDamageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeDamageWeakeningKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeForestConditionsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeForestFireKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeForestFloorKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeGardenPlantsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeNurseryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeOriginKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeReforestationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeRegisterObjectKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeRightEncumbranceKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeRightForestPlotKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeVegetationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypeZOUITKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypesAgricultureKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypesForestViolationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypesHitsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypesIdentityDocKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dTypesIdentityDocKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dUnitChargeRateKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dUnitMeasurementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dUnitMeasurementRecordKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dUsageReasonKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dUsageTypeKindTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dUsageTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dVarietyHeightsDiametKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dViolationMonitoringKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\dWasteDegreeCoverageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\distributionSpecialPurposeType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentPackageTypes-2.1.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentPackageTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentPackageTypes-2.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentPackageTypes-2.2.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentPackageTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentTypes-2.1.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentTypes-2.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentTypes-2.2.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\documentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\forestUseType-5.0.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\forestUseType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\infoType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\locationCuttingsWoodType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\measuresType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\objectSourceTypes-0.2.2.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\objectSourceTypes-0.3.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\objectSourceTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\objectsType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\popdContoursLocation_v0.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\popdContoursLocation_v0.3.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\preventionType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\reforestationPlanType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\sanitaryRecreationalMeasuresType.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\serviceInfo.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\simpleTypes-2.0.0-smev.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\simpleTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\simpleTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\simpleTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\smev-supplementary-commons-1.2.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\stateForestRegisterExtractTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\subjectTypes-2.1.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\subjectTypes-2.1.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\subjectTypes-2.1.2.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\subjectTypes-2.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\subjectTypes-2.2.1.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\subjectTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProjectForestry\common\volumeCuttingsWoodType.xsd" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

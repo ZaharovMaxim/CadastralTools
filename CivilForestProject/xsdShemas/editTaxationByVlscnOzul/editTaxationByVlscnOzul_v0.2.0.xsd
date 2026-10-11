@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- edited with XMLSpy v2018 rel. 2 sp1 (x64) (http://www.altova.com) by MESMERiZE (MSM) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://rosleshoz.gov.ru/fgis-lk/editTaxation/types/0.2.0" xmlns:st="http://rosleshoz.gov.ru/fgis-lk/common/simple/types/2.2.2" xmlns:ozu="http://rosleshoz.gov.ru/fgis-lk/common/enums/nameProtectedForests/types/2.1.5" xmlns:purF="http://rosleshoz.gov.ru/fgis-lk/common/enums/purposeForests/types/2.1.2" xmlns:subfor="http://rosleshoz.gov.ru/fgis-lk/common/enums/districtForestries/types/2.1.5" targetNamespace="http://rosleshoz.gov.ru/fgis-lk/editTaxation/types/0.2.0" elementFormDefault="qualified">
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/simple/types/2.2.2" schemaLocation="common3.4/simpleTypes-2.2.2.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/nameProtectedForests/types/2.1.5" schemaLocation="common3.4/dNameProtectedForestsKindTypes-2.1.5.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/purposeForests/types/2.1.2" schemaLocation="common3.4/dPurposeForestsKindTypes-2.1.2.xsd"/>
+	<xs:import namespace="http://rosleshoz.gov.ru/fgis-lk/common/enums/districtForestries/types/2.1.5" schemaLocation="common3.4/dDistrictForestriesKindTypes-2.1.5.xsd"/>
+	<xs:element name="editTaxation" type="tns:editTaxationType">
+		<xs:annotation>
+			<xs:documentation>Описание изменений лесотаксационных выделов</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="ProtectedForestsType">
+		<xs:annotation>
+			<xs:documentation>Особо защитные участки лесов</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="nameProtectedForests" type="ozu:NameProtectedForestsKindEType">
+				<xs:annotation>
+					<xs:documentation>Особо защитный участок леса (справочное значение)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="removeProtectedForests" type="st:BooleanSType">
+				<xs:annotation>
+					<xs:documentation>Удаляется ли характеристика особо защитного участка леса для данного выдела? (true/false)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="FgislkTaxationRegistrationNoType">
+		<xs:annotation>
+			<xs:documentation>Указание учетного номера ФГИС ЛК исходного выдела</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="fgislkParentRegistrationNo" type="st:String25SType">
+				<xs:annotation>
+					<xs:documentation>Учетный номер ФГИС ЛК исходного выдела</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="newTaxationPiece" type="tns:NewTaxationPieceType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Указание новых лесотаксационных выделов и их характеристик</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LuTaxationRegistrationNoType">
+		<xs:annotation>
+			<xs:documentation>Указание лесоустроительного номера исходного выдела</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="luParentRegistrationNo" type="tns:LuTaxationParentType">
+				<xs:annotation>
+					<xs:documentation>Указание лесоустроительного номера исходного выдела</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="newTaxationPiece" type="tns:NewTaxationPieceType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Указание новых лесотаксационных выделов и их характеристик</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="NewTaxationPieceType">
+		<xs:annotation>
+			<xs:documentation>Новый лесотаксационный выдел и его характеристики</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="luForestTaxationNumber" type="st:String25SType">
+				<xs:annotation>
+					<xs:documentation>Лесоустроительный номер лесотаксационного выдела</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="objectGuid" type="st:String128SType">
+				<xs:annotation>
+					<xs:documentation>Идентификатор лесотаксационного выдела, для определения границ лесотаксационного выдела из файла geoJson
+</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="area" type="xs:decimal" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Площадь, га, ограничение: 4 знака после запятой</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="events" type="st:BooleanSType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Удаляется ли характеристика проектируемых мероприятий для данного выдела? (true/false)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="purposeForests" type="purF:PurposeForestsKindEType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Вид лесов по их целевому назначению (справочное значение)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="protectedForests" type="tns:ProtectedForestsType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Особо защитные участки лесов</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="editTaxationType">
+		<xs:annotation>
+			<xs:documentation>Описание изменений лесотаксационных выделов</xs:documentation>
+		</xs:annotation>
+		<xs:choice maxOccurs="unbounded">
+			<xs:element name="fgislkTaxationRegistrationNo" type="tns:FgislkTaxationRegistrationNoType">
+				<xs:annotation>
+					<xs:documentation>Указание учетного номера ФГИС ЛК исходного выдела</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="luTaxationRegistrationNo" type="tns:LuTaxationRegistrationNoType">
+				<xs:annotation>
+					<xs:documentation>Указание лесоустроительного номера исходного выдела</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="LuTaxationParentType">
+		<xs:annotation>
+			<xs:documentation>Лесоустроительный номер исходного выдела</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="subforestryCode" type="subfor:DistrictForestriesKindEType" minOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Участковое лесничество (справочное значение)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="nameTract" type="st:String128SType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Наименование урочища, лесной дачи, номер технического участка, иные сведения о подразделении до 01.01.2023 лесничеств, участковых лесничеств на составные части (при наличии)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="luForestQuarterNumber" type="st:String25SType">
+				<xs:annotation>
+					<xs:documentation>Лесоустроительный номер лесного квартала</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="luForestTaxationNumber" type="st:String25SType">
+				<xs:annotation>
+					<xs:documentation>Лесоустроительный номер лесотаксационного выдела</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

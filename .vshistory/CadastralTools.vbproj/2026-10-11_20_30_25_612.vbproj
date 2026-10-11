@@ -1,0 +1,348 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F516F111-7A4F-487B-8A6D-BEEF1FE6035B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CadastralTools</RootNamespace>
+    <AssemblyName>CadastralTools</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <MyType>Windows</MyType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>CadastralTools.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>CadastralTools.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionCompare>Binary</OptionCompare>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionStrict>Off</OptionStrict>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>CadastralKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\..\NET\NetTopologySuite.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\NET\Topomatic Robur Road 16.0\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Xml.Linq" />
+    <Import Include="System.Threading.Tasks" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CadastralFunction\CadastralInfo.vb" />
+    <Compile Include="CadastralLeader\CadastralLeader.vb" />
+    <Compile Include="CadastralLeader\CadastralLine.vb" />
+    <Compile Include="CadastralLeader\CadastralOstrov.vb" />
+    <Compile Include="CadastralLeader\CadastralPolygon.vb" />
+    <Compile Include="CivilLandProject\CadastralPoint\CadastralPoint.vb" />
+    <Compile Include="CivilLandProject\ImportKPT\ImportKPT.vb" />
+    <Compile Include="CivilLandProject\WPFDataGrid.vb" />
+    <Compile Include="CivilLandProject\StructureElement.vb" />
+    <Compile Include="DataFormatting\DataFormatting.vb" />
+    <Compile Include="FuncNetTopologySuite\FuncNetTopologySuite.vb" />
+    <Compile Include="InstalProgram\GoogleDriveDownloader.vb" />
+    <Compile Include="JSON\JsonValidator.vb" />
+    <Compile Include="MathFunction\MathFunction.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="SupportFiles\SupportFiles.vb" />
+    <Compile Include="TemplateXML\TemplateXML.vb" />
+    <Compile Include="Topology\Topology.vb" />
+    <Compile Include="WinForms\CadastralForms\FormAutomaticCreateParcels.Designer.vb">
+      <DependentUpon>FormAutomaticCreateParcels.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormAutomaticCreateParcels.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreateCadastralObject.Designer.vb">
+      <DependentUpon>FormCreateCadastralObject.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreateCadastralObject.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreatePoint.Designer.vb">
+      <DependentUpon>FormCreatePoint.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreatePoint.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormImportKPT.Designer.vb">
+      <DependentUpon>FormImportKPT.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormImportKPT.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormImportPoint.Designer.vb">
+      <DependentUpon>FormImportPoint.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormImportPoint.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormSelectObject.Designer.vb">
+      <DependentUpon>FormSelectObject.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormSelectObject.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CivilLandProject\WinFormDataGrid.vb" />
+    <Compile Include="WinForms\FormUpdateProgram.Designer.vb">
+      <DependentUpon>FormUpdateProgram.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\FormUpdateProgram.vb">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormAutomaticCreateParcels.resx">
+      <DependentUpon>FormAutomaticCreateParcels.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormCreateCadastralObject.resx">
+      <DependentUpon>FormCreateCadastralObject.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormCreatePoint.resx">
+      <DependentUpon>FormCreatePoint.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormImportKPT.resx">
+      <DependentUpon>FormImportKPT.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormImportPoint.resx">
+      <DependentUpon>FormImportPoint.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormSelectObject.resx">
+      <DependentUpon>FormSelectObject.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\FormUpdateProgram.resx">
+      <DependentUpon>FormUpdateProgram.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CadastralKey.snk" />
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="WinForms\ForestForms\frmEditTaxation.Designer.vb">
+      <DependentUpon>frmEditTaxation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmEditTaxation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmOnli.Designer.vb">
+      <DependentUpon>frmOnli.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmOnli.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmTaxationDescription.Designer.vb">
+      <DependentUpon>frmTaxationDescription.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmTaxationDescription.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\ctlForestUserWF.Designer.vb">
+      <DependentUpon>ctlForestUserWF.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\ctlForestUserWF.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CivilForestProject\ClsEditTaxationXml.vb" />
+    <Compile Include="CivilForestProject\ClsOnliXml.vb" />
+    <Compile Include="CivilForestProject\ClsTaxationDescriptionXml.vb" />
+    <Compile Include="CivilForestProject\ClsTaxationDescriptionXmlWriter.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="WinForms\ForestForms\frmEditTaxation.resx">
+      <DependentUpon>frmEditTaxation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmOnli.resx">
+      <DependentUpon>frmOnli.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmTaxationDescription.resx">
+      <DependentUpon>frmTaxationDescription.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Onli.xml" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Onli_v1.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\puomCommon_v1.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\addressTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\attachmentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\commonReport.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\complexTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dConstituentEntityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dCoordinateSystemKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dCountryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dDistrictForestriesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dDocumentTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dSectionGlrKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dSellDocTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dSpatialPrimitiveKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dTreeNewKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dTypeRightForestPlotKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dTypesIdentityDocKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\dUnitMeasurementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\documentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\objectSourceTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\simpleTypes-2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\simpleTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\ProvisionChangesForestObjects\Common2\subjectTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\taxationDescription.xslt" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\taxationDescription_v2.0.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\Таксационное описание выделов лесотаксационных выделов.xml" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\addressTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\attachmentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\complexTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dAgeClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dAgeGroupKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dBonitetKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCategoryLandForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCategoryLandKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCompletenesSlayerKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dConditionHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dConstituentEntityKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dContaminationLandsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCoordinateSystemKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCountryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCuttingGroupCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dCuttingTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dDensityUndergrowthKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dDistrictForestriesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dDocumentTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dErosionDegreeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dErosionTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dFarmsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dFellingForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dForestResoursKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dForestryActivitiesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dForestryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dGardenTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dGeodataExternalFormatKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dGeodataStorageKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dLandTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dLocationTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dMarketabilityClassKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dMeasuresOZVLKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dMethodDeterminPointKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dNameObjectSeedProdKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dNameProtectedForestsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dOkpd2KindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dPurposeCreatedRoadKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dPurposeForestsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dQualityHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dReliefKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dRoadTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSeasonUseKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSellDocTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSlopeExposureKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSlopeSteepnessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSoilTypesKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSpatialPrimitiveKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dStateForestPlantKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dSwampTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTaxationCategoryKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTnVedWoodKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTreeNewKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTrustworthinessKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeForestConditionsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeForestFireKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeForestKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeGardenPlantsKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeHaymakingKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeOriginKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypeVegetationKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dTypesIdentityDocKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dUnitMeasurementKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\dUsageTypeKindTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\documentTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\popdContoursLocation_v0.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\simpleTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\stateForestRegisterExtractTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\TaxationDescription\common2\subjectTypes.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\editTaxationByVlscnOzul_v0.2.0.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\dDistrictForestriesKindTypes-2.1.5.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\dNameProtectedForestsKindTypes-2.1.5.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\dPurposeForestsKindTypes-2.1.2.xsd" />
+    <None Include="CivilForestProject\xsdShemas\editTaxationByVlscnOzul\common3.4\simpleTypes-2.2.2.xsd" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+</Project>
