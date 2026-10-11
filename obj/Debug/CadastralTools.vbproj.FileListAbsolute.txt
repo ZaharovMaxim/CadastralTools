@@ -1,0 +1,17 @@
+K:\Civil3DToolsUtility\NET\CadastralTools.dll
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.vbproj.AssemblyReference.cache
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.Resources.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormAutomaticCreateParcels.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormCreateCadastralObject.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormCreatePoint.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormImportKPT.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormImportPoint.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormSelectObject.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.FormUpdateProgram.resources
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.vbproj.GenerateResource.cache
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.vbproj.CoreCompileInputs.cache
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.dll
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.xml
+C:\захаров\CadastralTools\obj\Debug\CadastralTools.pdb
+K:\Civil3DToolsUtility\NET\CadastralTools.pdb
+K:\Civil3DToolsUtility\NET\CadastralTools.xml
