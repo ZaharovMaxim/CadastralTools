@@ -51,7 +51,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\NET\Topomatic Robur Road 16.0\NetTopologySuite.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -83,6 +82,11 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CadastralFunction\CadastralInfo.vb" />
+    <Compile Include="CadastralLeader\CadastralLeader.vb" />
+    <Compile Include="CadastralLeader\CadastralLine.vb" />
+    <Compile Include="CadastralLeader\CadastralOstrov.vb" />
+    <Compile Include="CadastralLeader\CadastralPolygon.vb" />
     <Compile Include="CivilLandProject\CadastralPoint\CadastralPoint.vb" />
     <Compile Include="CivilLandProject\ImportKPT\ImportKPT.vb" />
     <Compile Include="CivilLandProject\WPFDataGrid.vb" />

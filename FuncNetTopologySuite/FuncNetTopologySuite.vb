@@ -1,4 +1,4 @@
-﻿Imports System.Collections.Generic
+Imports System.Collections.Generic
 Imports System.Drawing
 Imports NetTopologySuite
 Imports NetTopologySuite.Algorithm
@@ -70,58 +70,39 @@ Public Class FuncNetTopologySuite
         End Try
     End Function
     'добаляет полигону внутренний островок
-    Public Function AddPolygonAsHole(ByVal outerPoly As Polygon, ByVal innerPoly As Polygon) As Polygon
-        ' Проверка на null
-        If outerPoly Is Nothing OrElse innerPoly Is Nothing Then
-            Return outerPoly
-        End If
-        ' Проверка, что внутренний полигон действительно внутри внешнего
+    Public Function AddPolygonAsHole(ByVal outerPoly As Polygon, ByVal innerPoly As Polygon, Optional ByVal userData As StructureElement = Nothing) As Polygon
+        ' --- Проверки входа ---
+        If outerPoly Is Nothing OrElse innerPoly Is Nothing Then Return outerPoly
+        If outerPoly.IsEmpty OrElse innerPoly.IsEmpty Then Return outerPoly
         If Not outerPoly.Covers(innerPoly) Then
-            Console.WriteLine("Внутренний полигон не находится полностью внутри внешнего")
             Return outerPoly
         End If
         Try
-            ' Получаем внешнюю оболочку как LinearRing
-            Dim shell As LinearRing = TryCast(outerPoly.ExteriorRing, LinearRing)
-            If shell Is Nothing Then
-                ' Если не удается получить как LinearRing, создаем новый
-                shell = outerPoly.Factory.CreateLinearRing(outerPoly.Coordinates)
+            Dim factory As GeometryFactory = outerPoly.Factory
+            ' --- Внешнее кольцо (копия) ---
+            Dim shell As LinearRing = DirectCast(outerPoly.ExteriorRing.Copy(), LinearRing)
+            ' --- Собираем дырки: существующие (копии) + новая ---
+            Dim allHoles As New List(Of LinearRing)()
+
+            ' Существующие дырки — копируем, UserData пока не трогаем
+            For i As Integer = 0 To outerPoly.NumInteriorRings - 1
+                allHoles.Add(DirectCast(outerPoly.GetInteriorRingN(i).Copy(), LinearRing))
+            Next
+            ' Новая дырка из innerPoly
+            Dim holeCoords As Coordinate() = innerPoly.ExteriorRing.Coordinates
+            ' Приводим ориентацию дырки к CW (стандарт OGC)
+            If Orientation.IsCCW(holeCoords) Then
+                Array.Reverse(holeCoords)
             End If
 
-            ' Получаем существующие отверстия (как массив LinearRing)
-            Dim existingHolesCount As Integer = outerPoly.NumInteriorRings
-            Dim existingHoles As New List(Of LinearRing)()
+            Dim newHole As LinearRing = factory.CreateLinearRing(holeCoords)
+            newHole.UserData = innerPoly.UserData
+            allHoles.Add(newHole)
 
-            For i As Integer = 0 To existingHolesCount - 1
-                Dim hole As LinearRing = TryCast(outerPoly.GetInteriorRingN(i), LinearRing)
-                If hole IsNot Nothing Then
-                    existingHoles.Add(hole)
-                End If
-            Next
-
-            ' Создаем новое отверстие из внутреннего полигона
-            ' Важно: отверстие должно иметь противоположную ориентацию (по часовой стрелке)
-            Dim holeCoordinates As Coordinate() = innerPoly.Coordinates
-
-            Dim holeRing As LinearRing = innerPoly.Factory.CreateLinearRing(holeCoordinates)
-
-            ' Создаем новый список отверстий
-            Dim allHoles As New List(Of LinearRing)()
-            allHoles.AddRange(existingHoles)
-            allHoles.Add(holeRing)
-
-            ' Создаем новый полигон с отверстием
-            ' Для создания полигона с отверстиями используем массив LinearRing
-            ' Первый элемент - внешняя оболочка, остальные - отверстия
-            Dim rings(allHoles.Count) As LinearRing
-            rings(0) = shell
-            For i As Integer = 0 To allHoles.Count - 1
-                rings(i + 1) = allHoles(i)
-            Next
-
-            ' Создаем полигон через фабрику
-            Dim resultPoly As Polygon = outerPoly.Factory.CreatePolygon(rings(0), rings.Skip(1).ToArray())
-            Return resultPoly
+            ' --- Создаём новый полигон ---
+            Dim result As Polygon = factory.CreatePolygon(shell, allHoles.ToArray())
+            result.UserData = outerPoly.UserData
+            Return result
         Catch ex As Exception
             Return outerPoly
         End Try
@@ -261,71 +242,106 @@ Public Class FuncNetTopologySuite
         End Try
     End Function
     'функция удаляет дублирующие вершины в полигоне (запуск RemoveDuplicateVertices, RemoveDuplicatesFromRing - вспомогательная функция)
-    Public Shared Function RemoveDuplicateVertices(polygon As Polygon, Optional tolerance As Double = 0.01) As Polygon
-        If polygon.IsEmpty Then
-            Return polygon
-        End If
-        ' Обрабатываем внешнее кольцо
+    Public Shared Function RemoveDuplicateVertices(ByVal polygon As Polygon, Optional ByVal tolerance As Double = 0.01) As Polygon
+        Dim result As Polygon = Nothing
+        If polygon Is Nothing OrElse polygon.IsEmpty Then Return polygon
+        Dim factory As GeometryFactory = polygon.Factory
+        ' --- Внешнее кольцо ---
+        Dim userExtData As StructureElement = polygon.UserData
         Dim shell As LinearRing = RemoveDuplicatesFromRing(polygon.ExteriorRing, tolerance)
-        ' Обрабатываем внутренние кольца (дырки)
-        Dim holes As LinearRing() = New LinearRing(polygon.NumInteriorRings - 1) {}
+        ' Если внешнее кольцо схлопнулось — вернуть пустой полигон
+        If shell Is Nothing OrElse shell.NumPoints < 4 Then
+            Return factory.CreatePolygon(CType(Nothing, LinearRing))
+        End If
+        ' --- Дырки ---
+        Dim holes As New List(Of LinearRing)()
         For i As Integer = 0 To polygon.NumInteriorRings - 1
-            holes(i) = RemoveDuplicatesFromRing(polygon.GetInteriorRingN(i), tolerance)
+            Dim tempUserData As StructureElement = polygon.GetInteriorRingN(i).UserData
+            Dim cleanedHole As LinearRing = RemoveDuplicatesFromRing(polygon.GetInteriorRingN(i), tolerance)
+            cleanedHole.UserData = tempUserData
+            ' Дырка должна иметь минимум 4 точки и ненулевую площадь
+            If cleanedHole IsNot Nothing AndAlso cleanedHole.NumPoints >= 4 Then
+                holes.Add(cleanedHole)
+            End If
         Next
-        Return New Polygon(shell, holes)
+        ' Создаём полигон через фабрику исходного полигона (сохраняем SRID и PrecisionModel)
+        result = factory.CreatePolygon(shell, holes.ToArray())
+        If IsNothing(result) = False Then
+            result.UserData = userExtData
+        Else
+            result = polygon
+        End If
+        Return result
     End Function
-    Private Shared Function RemoveDuplicatesFromRing(ring As LinearRing, tolerance As Double) As LinearRing
+    Private Shared Function RemoveDuplicatesFromRing(ByVal ring As LinearRing, ByVal tolerance As Double) As LinearRing
+        If ring Is Nothing OrElse ring.IsEmpty Then Return Nothing
         Dim coordinates As Coordinate() = ring.Coordinates
+        If coordinates.Length = 0 Then Return Nothing
         Dim uniqueCoords As New List(Of Coordinate)()
-        If coordinates.Length > 0 Then
-            uniqueCoords.Add(coordinates(0))
-            For i As Integer = 1 To coordinates.Length - 1
-                Dim prev As Coordinate = uniqueCoords.Last()
-                Dim current As Coordinate = coordinates(i)
-                ' Сравниваем с учетом допуска
-                Dim distance As Double = prev.Distance(current)
-                If distance > tolerance Then
-                    uniqueCoords.Add(current)
-                End If
-            Next
+        uniqueCoords.Add(coordinates(0))
+        For i As Integer = 1 To coordinates.Length - 1
+            Dim prev As Coordinate = uniqueCoords(uniqueCoords.Count - 1)
+            Dim current As Coordinate = coordinates(i)
+
+            If prev.Distance(current) > tolerance Then
+                uniqueCoords.Add(current)
+            End If
+        Next
+        ' --- Замыкание кольца с учётом допуска ---
+        If uniqueCoords.Count >= 2 Then
+            Dim first As Coordinate = uniqueCoords(0)
+            Dim last As Coordinate = uniqueCoords(uniqueCoords.Count - 1)
+
+            If first.Distance(last) <= tolerance Then
+                ' Заменяем последнюю точку на копию первой — гарантирует точное замыкание
+                uniqueCoords(uniqueCoords.Count - 1) = New Coordinate(first)
+            Else
+                uniqueCoords.Add(New Coordinate(first))
+            End If
         End If
-        ' Замыкаем кольцо (если нужно)
-        If uniqueCoords.Count > 1 AndAlso
-           Not uniqueCoords.First().Equals2D(uniqueCoords.Last()) Then
-            uniqueCoords.Add(New Coordinate(uniqueCoords.First()))
+        ' Кольцо должно иметь минимум 4 точки (3 уникальные + замыкание)
+        If uniqueCoords.Count < 4 Then Return Nothing
+        ' Убираем возможные дубликаты, которые могли появиться при замыкании
+        ' (например, если первая точка совпадала с предпоследней)
+        If uniqueCoords.Count >= 2 Then
+            Dim first As Coordinate = uniqueCoords(0)
+            Dim secondLast As Coordinate = uniqueCoords(uniqueCoords.Count - 2)
+            If first.Distance(secondLast) <= tolerance Then
+                uniqueCoords.RemoveAt(uniqueCoords.Count - 2)
+            End If
         End If
+        If uniqueCoords.Count < 4 Then Return Nothing
         Return New LinearRing(uniqueCoords.ToArray())
     End Function
     'функция делает реверс полигонов
     Public Shared Function ReversePolygonPreserveOrientation(polygon As Polygon) As Polygon
-        ' Реверсируем внешнее кольцо
-        Dim reversedShell As LinearRing = CType(polygon.ExteriorRing.Reverse(), LinearRing)
-        ' Корректируем ориентацию внешнего кольца (должно быть CCW)
-        If Not Orientation.IsCCW(reversedShell.CoordinateSequence) Then
-            ' Уже правильная ориентация после реверса
+        If polygon Is Nothing OrElse polygon.IsEmpty Then Return polygon
+        Dim factory As GeometryFactory = polygon.Factory
+        Dim userExtData As StructureElement = polygon.UserData
+        ' --- Внешнее кольцо: должно быть CW ---
+        Dim shell As LinearRing = polygon.ExteriorRing
+        If Orientation.IsCCW(shell.CoordinateSequence) Then
+            shell = ReverseRing(shell, factory)
         End If
-        ' Реверсируем внутренние кольца (дырки)
-        Dim reversedHoles As LinearRing() = New LinearRing(polygon.NumInteriorRings - 1) {}
+        ' --- Дырки: тоже должны быть CW ---
+        Dim holes As New List(Of LinearRing)()
         For i As Integer = 0 To polygon.NumInteriorRings - 1
-            Dim hole As LinearRing = CType(polygon.GetInteriorRingN(i).Reverse(), LinearRing)
-
-            ' Внутренние кольца должны быть CW (по часовой стрелке)
+            Dim hole As LinearRing = polygon.GetInteriorRingN(i)
+            Dim holeUserData As StructureElement = hole.UserData
             If Orientation.IsCCW(hole.CoordinateSequence) Then
-                hole = CType(hole.Reverse(), LinearRing)
+                hole = ReverseRing(hole, factory)
             End If
-            reversedHoles(i) = hole
+            hole.UserData = holeUserData
+            holes.Add(hole)
         Next
-        Return New Polygon(reversedShell, reversedHoles)
+        Dim result As Polygon = factory.CreatePolygon(shell, holes.ToArray())
+        result.UserData = userExtData
+        Return result
     End Function
-    ' Реверсирует только внешнее кольцо, сохраняя внутренние как есть
-    Public Shared Function ReverseOnlyShell(polygon As Polygon) As Polygon
-        Dim reversedShell As LinearRing = CType(polygon.ExteriorRing.Reverse(), LinearRing)
-        Dim holes As LinearRing() = New LinearRing(polygon.NumInteriorRings - 1) {}
-        ' Внутренние кольца не меняем
-        For i As Integer = 0 To polygon.NumInteriorRings - 1
-            holes(i) = CType(polygon.GetInteriorRingN(i).Copy(), LinearRing)
-        Next
-        Return New Polygon(reversedShell, holes)
+    Private Shared Function ReverseRing(ByVal ring As LinearRing, ByVal factory As GeometryFactory) As LinearRing
+        Dim coords As Coordinate() = ring.Coordinates
+        Array.Reverse(coords)
+        Return factory.CreateLinearRing(coords)
     End Function
     ' Реверсирует все кольца полигона
     Public Shared Function ReverseAllRings(polygon As Polygon) As Polygon
@@ -336,6 +352,294 @@ Public Class FuncNetTopologySuite
         Next
         Return New Polygon(reversedShell, reversedHoles)
     End Function
+    'функция упорядочивает полигоны
+    Public Function SortByNearestNeighbor(polygons As List(Of NetTopologySuite.Geometries.Polygon)) As List(Of NetTopologySuite.Geometries.Polygon)
+        If polygons.Count <= 1 Then Return polygons
+
+        Dim remaining = New List(Of NetTopologySuite.Geometries.Polygon)(polygons)
+        Dim sorted = New List(Of NetTopologySuite.Geometries.Polygon)()
+
+        ' Начинаем с самого левого (или любого другого)
+        Dim current = remaining.OrderBy(Function(p) p.Centroid.X).First()
+        sorted.Add(current)
+        remaining.Remove(current)
+
+        While remaining.Count > 0
+            Dim nearest = remaining _
+            .OrderBy(Function(p) p.Distance(current)) _
+            .First()
+            sorted.Add(nearest)
+            remaining.Remove(nearest)
+            current = nearest
+        End While
+
+        Return sorted
+    End Function
+    Public Shared Function SortByNearestNeighbor(Of T As Geometry)(geometries As List(Of T)) As List(Of T)
+        If geometries Is Nothing OrElse geometries.Count <= 1 Then
+            Return geometries
+        End If
+
+        Dim remaining As New List(Of T)(geometries)
+        Dim sorted As New List(Of T)(geometries.Count)
+
+        ' Начинаем с самой левой (по X центроида).
+        Dim current As T = remaining.OrderBy(Function(g) g.Centroid.X).First()
+        sorted.Add(current)
+        remaining.Remove(current)
+
+        While remaining.Count > 0
+            Dim nearest As T = remaining _
+            .OrderBy(Function(g) g.Distance(current)) _
+            .First()
+
+            sorted.Add(nearest)
+            remaining.Remove(nearest)
+            current = nearest
+        End While
+
+        Return sorted
+    End Function
+    ''' <summary>
+    ''' Делает начальной вершиной северо-западный угол для внешнего кольца
+    ''' и для каждой дырки. Критерий СЗ: минимальный X; при равных X — максимальный Y.
+    ''' </summary>
+    ''' <param name="polygon">Исходный полигон</param>
+    ''' <param name="tolerance">Допуск для сравнения координат</param>
+    ''' <returns>Новый полигон, у которого внешнее кольцо и все дырки начинаются с СЗ-вершины</returns>
+    Public Shared Function NorthWestVertexFirst(ByVal polygon As Polygon, Optional ByVal tolerance As Double = 0.000001) As Polygon
+        Dim result As Polygon = Nothing
+        If polygon Is Nothing OrElse polygon.IsEmpty Then Return polygon
+        Dim factory As GeometryFactory = polygon.Factory
+        Dim userExtData As StructureElement = polygon.UserData
+        ' --- Внешнее кольцо ---
+        Dim newShell As LinearRing = ReorderRingFromNorthWest(polygon.ExteriorRing, factory, tolerance)
+        If newShell Is Nothing Then Return polygon   ' вырожденное кольцо
+        ' --- Дырки ---
+        Dim holes As New List(Of LinearRing)()
+        For i As Integer = 0 To polygon.NumInteriorRings - 1
+            Dim hole As LinearRing = polygon.GetInteriorRingN(i)
+            Dim userData As StructureElement = hole.UserData
+            Dim newHole As LinearRing = ReorderRingFromNorthWest(hole, factory, tolerance)
+            newHole.UserData = userData
+            If newHole IsNot Nothing Then
+                holes.Add(newHole)
+            Else
+                holes.Add(hole)   ' если дырка вырожденная — оставляем как есть
+            End If
+        Next
+        ' --- Создаём результат ---
+        result = factory.CreatePolygon(newShell, holes.ToArray())
+        If IsNothing(result) = False Then
+            result.UserData = userExtData
+        Else
+            result = polygon
+        End If
+        Return result
+    End Function
+
+    ''' <summary>
+    ''' Переставляет вершины кольца так, чтобы СЗ-вершина стала первой.
+    ''' Возвращает новое кольцо или Nothing, если кольцо вырожденное.
+    ''' </summary>
+    Private Shared Function ReorderRingFromNorthWest(ByVal ring As LinearRing, ByVal factory As GeometryFactory, ByVal tolerance As Double) As LinearRing
+        If ring Is Nothing OrElse ring.IsEmpty Then Return Nothing
+        Dim coords As Coordinate() = ring.Coordinates
+        If coords.Length < 4 Then Return Nothing   ' минимум для валидного кольца
+        Dim nwIndex As Integer = FindNorthWestVertexIndex(coords, tolerance)
+        Dim reorderedCoords As Coordinate() = ReorderCoordinates(coords, nwIndex)
+        If reorderedCoords Is Nothing Then Return Nothing
+        Return factory.CreateLinearRing(reorderedCoords)
+    End Function
+    ''' <summary>
+    ''' Находит индекс северо-западной вершины:
+    ''' минимальный X; при равных X — максимальный Y.
+    ''' Последняя (замыкающая) точка игнорируется.
+    ''' </summary>
+    Private Shared Function FindNorthWestVertexIndex(ByVal coords As Coordinate(), ByVal tolerance As Double) As Integer
+        ' Игнорируем замыкающую точку
+        Dim count As Integer = coords.Length - 1
+        If count <= 0 Then Return 0
+
+        Dim bestIndex As Integer = 0
+        Dim bestX As Double = coords(0).X
+        Dim bestY As Double = coords(0).Y
+
+        For i As Integer = 1 To count - 1
+            Dim currentX As Double = coords(i).X
+            Dim currentY As Double = coords(i).Y
+
+            If currentX < bestX - tolerance Then
+                bestIndex = i
+                bestX = currentX
+                bestY = currentY
+            ElseIf Math.Abs(currentX - bestX) <= tolerance Then
+                ' При равном X — берём более северную (больший Y)
+                If currentY > bestY Then
+                    bestIndex = i
+                    bestX = currentX
+                    bestY = currentY
+                End If
+            End If
+        Next
+        Return bestIndex
+    End Function
+
+    ''' <summary>
+    ''' Перестраивает массив координат кольца, начиная с указанного индекса.
+    ''' Возвращает замкнутый массив (первая точка = последняя).
+    ''' </summary>
+    Private Shared Function ReorderCoordinates(ByVal coords As Coordinate(), ByVal startIndex As Integer) As Coordinate()
+        If coords Is Nothing OrElse coords.Length < 4 Then Return Nothing
+        Dim vertexCount As Integer = coords.Length - 1
+        If startIndex < 0 OrElse startIndex >= vertexCount Then startIndex = 0
+
+        Dim reordered As New List(Of Coordinate)(vertexCount + 1)
+
+        For i As Integer = 0 To vertexCount - 1
+            Dim idx As Integer = (startIndex + i) Mod vertexCount
+            reordered.Add(New Coordinate(coords(idx)))   ' копия
+        Next
+        ' Замыкаем
+        reordered.Add(New Coordinate(reordered(0)))
+        Return reordered.ToArray()
+    End Function
+
+
+    '' <summary>
+    ''' Округляет все вершины полигона (внешнее кольцо и дырки) до сантиметра.
+    ''' Подразумевается, что единицы координат — метры, поэтому округление до 0.01.
+    ''' </summary>
+    ''' <param name="polygon">Исходный полигон</param>
+    ''' <param name="precision">Шаг округления (по умолчанию 0.01 — сантиметр)</param>
+    ''' <returns>Новый полигон с округлёнными координатами</returns>
+    Public Shared Function RoundPolygonVertices(ByVal polygon As Polygon, Optional ByVal precision As Double = 0.01) As Polygon
+        Dim result As Polygon = Nothing
+        If polygon Is Nothing OrElse polygon.IsEmpty Then Return polygon
+        Dim userExtData As StructureElement = polygon.UserData
+        Dim factory As GeometryFactory = polygon.Factory
+
+        ' --- Внешнее кольцо ---
+        Dim newShell As LinearRing = RoundRing(polygon.ExteriorRing, factory, precision)
+
+        ' --- Дырки ---
+        Dim holes As New List(Of LinearRing)()
+        For i As Integer = 0 To polygon.NumInteriorRings - 1
+            Dim hole As LinearRing = polygon.GetInteriorRingN(i)
+            Dim userData As StructureElement = hole.UserData
+            Dim newHole As LinearRing = RoundRing(polygon.GetInteriorRingN(i), factory, precision)
+            newHole.UserData = userData
+            If newHole IsNot Nothing Then holes.Add(newHole)
+        Next
+        result = factory.CreatePolygon(newShell, holes.ToArray())
+        If IsNothing(result) = False Then
+            result.UserData = userExtData
+        Else
+            result = polygon
+        End If
+        Return result
+
+    End Function
+
+    ''' <summary>
+    ''' Округляет координаты одного кольца.
+    ''' </summary>
+    Private Shared Function RoundRing(ByVal ring As LinearRing, ByVal factory As GeometryFactory, ByVal precision As Double) As LinearRing
+
+        If ring Is Nothing OrElse ring.IsEmpty Then Return Nothing
+
+        Dim coords As Coordinate() = ring.Coordinates
+        If coords.Length < 4 Then Return Nothing
+
+        ' Округляем каждую координату
+        Dim rounded As New List(Of Coordinate)(coords.Length)
+        For i As Integer = 0 To coords.Length - 1
+            Dim x As Double = Math.Round(coords(i).X / precision) * precision
+            Dim y As Double = Math.Round(coords(i).Y / precision) * precision
+            rounded.Add(New Coordinate(x, y))
+        Next
+
+        ' Убираем возможные дубликаты, появившиеся после округления
+        ' (кроме первого и последнего — они обязаны совпадать для замыкания)
+        Dim unique As New List(Of Coordinate)()
+        unique.Add(rounded(0))
+
+        For i As Integer = 1 To rounded.Count - 2
+            Dim prev As Coordinate = unique(unique.Count - 1)
+            If prev.Distance(rounded(i)) > precision / 2 Then
+                unique.Add(rounded(i))
+            End If
+        Next
+
+        ' Замыкаем: последняя точка = копия первой
+        If unique.Count >= 1 Then
+            unique.Add(New Coordinate(unique(0)))
+        End If
+
+        ' Кольцо должно иметь минимум 4 точки (3 уникальные + замыкание)
+        If unique.Count < 4 Then Return Nothing
+
+        Return factory.CreateLinearRing(unique.ToArray())
+    End Function
+
+    ''' <summary>
+    ''' Округляет все вершины линии (LineString) до заданного шага.
+    ''' Подразумевается, что единицы координат — метры, поэтому округление до 0.01.
+    ''' В отличие от кольца, линия не замыкается принудительно.
+    ''' </summary>
+    ''' <param name="line">Исходная линия</param>
+    ''' <param name="precision">Шаг округления (по умолчанию 0.01 — сантиметр)</param>
+    ''' <returns>Новая линия с округлёнными координатами</returns>
+    Public Shared Function RoundLineStringVertices(ByVal line As LineString, Optional ByVal precision As Double = 0.01) As LineString
+        If line Is Nothing OrElse line.IsEmpty Then Return line
+
+        Dim userData As StructureElement = line.UserData
+        Dim factory As GeometryFactory = line.Factory
+
+        Dim rounded As Coordinate() = RoundCoordinates(line.Coordinates, precision)
+        ' После округления в линии должно остаться минимум 2 различные точки
+        If rounded Is Nothing OrElse rounded.Length < 2 Then Return line
+
+        Dim result As LineString = factory.CreateLineString(rounded)
+        If IsNothing(result) = False Then
+            result.UserData = userData
+        Else
+            result = line
+        End If
+        Return result
+    End Function
+
+    ''' <summary>
+    ''' Округляет массив координат и убирает последовательные дубликаты, появившиеся после округления.
+    ''' Первая точка сохраняется всегда, замыкание не добавляется — вариант для линий.
+    ''' </summary>
+    Private Shared Function RoundCoordinates(ByVal coords As Coordinate(), ByVal precision As Double) As Coordinate()
+        If coords Is Nothing OrElse coords.Length = 0 Then Return Nothing
+
+        ' Округляем каждую координату
+        Dim rounded As New List(Of Coordinate)(coords.Length)
+        For i As Integer = 0 To coords.Length - 1
+            Dim x As Double = Math.Round(coords(i).X / precision) * precision
+            Dim y As Double = Math.Round(coords(i).Y / precision) * precision
+            rounded.Add(New Coordinate(x, y))
+        Next
+
+        ' Убираем дубликаты, появившиеся после округления (первую точку сохраняем всегда)
+        Dim unique As New List(Of Coordinate)()
+        unique.Add(rounded(0))
+        For i As Integer = 1 To rounded.Count - 1
+            Dim prev As Coordinate = unique(unique.Count - 1)
+            If prev.Distance(rounded(i)) > precision / 2 Then
+                unique.Add(rounded(i))
+            End If
+        Next
+
+        Return unique.ToArray()
+    End Function
+
+
+
+
     '============================================================================================================================
     'работа с полилинией
     Public Function CreateLineString(coordinates(,) As String) As LineString
@@ -357,8 +661,6 @@ Public Class FuncNetTopologySuite
         ' Создаем LineString через фабрику геометрий
         Return _geometryFactory.CreateLineString(points)
     End Function
-
-
     '============================================================================================================================
     'создает линию из массива точек (NXY)
     Public Shared Function CreatePolylineFromNXYArray(ByVal nxyArray(,) As Object) As LineString
@@ -432,6 +734,94 @@ Public Class FuncNetTopologySuite
             End Try
         End If
     End Function
+    Public Shared Function RemoveDuplicateVertices(line As LineString,
+                                                Optional tolerance As Double = 0.01) As LineString
+        If line Is Nothing OrElse line.IsEmpty Then
+            Return line
+        End If
+
+        Return RemoveDuplicatesFromSequence(line, tolerance, isRing:=False)
+    End Function
+
+
+    ''' <summary>
+    ''' Удаляет дублирующие вершины из LinearRing.
+    ''' </summary>
+    Public Shared Function RemoveDuplicateVertices(ring As LinearRing,
+                                                Optional tolerance As Double = 0.01) As LinearRing
+        If ring Is Nothing OrElse ring.IsEmpty Then
+            Return ring
+        End If
+
+        ' Для кольца последнюю точку нужно обрабатывать как замыкающую,
+        ' иначе ring может стать незамкнутым.
+        Return RemoveDuplicatesFromSequence(ring, tolerance, isRing:=True)
+    End Function
+
+
+    ''' <summary>
+    ''' Вспомогательная функция: убирает вершины, расстояние от которых
+    ''' до предыдущей принятой вершины меньше tolerance.
+    ''' </summary>
+    Private Shared Function RemoveDuplicatesFromSequence(source As LineString,
+                                                      tolerance As Double,
+                                                      isRing As Boolean) As LineString
+        Dim coordSeq As CoordinateSequence = source.CoordinateSequence
+        Dim count As Integer = coordSeq.Count
+
+        If count = 0 Then
+            Return source
+        End If
+
+        Dim factory As GeometryFactory = source.Factory
+        Dim keep As New List(Of Coordinate)(count)
+
+        Dim prev As Coordinate = coordSeq.GetCoordinate(0)
+        keep.Add(prev)
+
+        For i As Integer = 1 To count - 1
+            Dim cur As Coordinate = coordSeq.GetCoordinate(i)
+            If prev.Distance(cur) >= tolerance Then
+                keep.Add(cur)
+                prev = cur
+            End If
+        Next
+
+        If isRing Then
+            ' Для кольца гарантируем замыкание: первая точка == последняя.
+            If keep.Count < 3 Then
+                ' Кольцо выродилось — вернём как есть, чтобы не сломать топологию.
+                Return DirectCast(source, LinearRing)
+            End If
+
+            Dim first As Coordinate = keep(0)
+            Dim last As Coordinate = keep(keep.Count - 1)
+
+            If Not first.Equals2D(last) Then
+                ' Если последняя принятая точка слишком близка к первой —
+                ' просто замыкаем на первую, иначе добавляем её как замыкающую.
+                If last.Distance(first) < tolerance Then
+                    keep(keep.Count - 1) = first
+                Else
+                    keep.Add(first)
+                End If
+            End If
+
+            If keep.Count < 4 Then
+                ' Валидное кольцо требует минимум 4 точки (включая замыкающую).
+                Return DirectCast(source, LinearRing)
+            End If
+
+            Return factory.CreateLinearRing(keep.ToArray())
+        Else
+            ' Для обычной линии минимум 2 точки.
+            If keep.Count < 2 Then
+                Return source
+            End If
+            Return factory.CreateLineString(keep.ToArray())
+        End If
+    End Function
+
     ''' Проверяет, пересекает ли полилиния полигон
     Public Function DoesLineIntersectPolygon(line As LineString, polygon As Polygon) As Boolean
         Try

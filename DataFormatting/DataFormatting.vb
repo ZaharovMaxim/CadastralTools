@@ -1,4 +1,5 @@
 ﻿Imports System.Text.RegularExpressions
+Imports CadastralTools.StructureElement
 
 Public Class DataFormatting
     'функция извлекает число до скобки (извлекает номер участка)
@@ -34,7 +35,7 @@ Public Class DataFormatting
             Return 0
         End Try
     End Function
-    'функция извлекает номер контура
+    'функция извлекает число в скобках (номер контура)
     Public Shared Function GetNumberInParenthesis(ByVal input As String) As Integer
         Try
             If String.IsNullOrWhiteSpace(input) Then
@@ -107,7 +108,6 @@ Public Class DataFormatting
             Return Nothing
         End Try
     End Function
-
     'замена значений в словаре на основе другого словаря, при условии что ключи совпадают
     Public Shared Function ReplaceDictionaryValues(ByRef dictionarySourceProperties As Dictionary(Of String, String), ByVal dictionaryDestProperties As Dictionary(Of String, Object)) As Boolean
         If IsNothing(dictionarySourceProperties) = True Then Return False
@@ -182,5 +182,52 @@ Public Class DataFormatting
         Catch ex As Exception
             Return False
         End Try
+    End Function
+    'функция пормирует строку для выноски
+    Public Shared Function getTextLeader(ByVal templateString As String, ByVal dictDataLeader As Dictionary(Of String, String), Optional ByRef mask As String = "") As String
+        Dim result As String = ""
+        If IsNothing(templateString) = False Then
+            If templateString.Trim.Length > 0 Then
+                Dim arrayData As String() = templateString.Split(";")
+                If arrayData.Length > 0 Then
+                    Dim ParcelNumerator As String = ""
+                    Dim ParcelDenumerator As String = ""
+                    For i As Integer = 0 To arrayData.Length - 1
+                        Dim tempStr As String = arrayData(i)
+                        If tempStr.IndexOf("numerator=") > -1 Or tempStr.IndexOf("Numerator=") > -1 Then
+                            ParcelNumerator = Mid(tempStr, 11)
+                        ElseIf tempStr.IndexOf("denominator=") > -1 Or tempStr.IndexOf("Denominator=") > -1 Then
+                            ParcelDenumerator = Mid(tempStr, 14)
+                        End If
+                    Next i
+                    If ParcelNumerator.Trim.Length > 0 Then
+                        mask = ParcelNumerator
+                    End If
+                    If ParcelDenumerator.Trim.Length > 0 Then
+                        mask = mask & vbLf & ParcelDenumerator
+                    End If
+
+                    If IsNothing(dictDataLeader) = False Then
+                        If dictDataLeader.Count > 0 Then
+                            For i As Integer = 0 To dictDataLeader.Count - 1
+                                Dim nameField As String = "<" & dictDataLeader.ElementAt(i).Key.Trim & ">"
+                                Dim value As String = dictDataLeader.ElementAt(i).Value
+                                If ParcelNumerator.IndexOf(nameField) > -1 Then
+                                    ParcelNumerator = ParcelNumerator.Replace(nameField, value)
+                                End If
+                                If ParcelDenumerator.IndexOf(nameField) > -1 Then
+                                    ParcelDenumerator = ParcelDenumerator.Replace(nameField, value)
+                                End If
+                            Next i
+                        End If
+                    End If
+                    result = ParcelNumerator
+                    If ParcelDenumerator.Trim.Length > 0 Then
+                        result = result & vbLf & ParcelDenumerator
+                    End If
+                End If
+            End If
+        End If
+        Return result
     End Function
 End Class

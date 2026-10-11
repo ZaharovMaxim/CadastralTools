@@ -1,11 +1,13 @@
 ﻿Imports System.Windows.Forms
 Imports System.IO
+Imports System.Xml
+Imports CadastralTools.StructureElement
 
 Public Class FormCreatePoint
     Public boolShow As Boolean = False
     Public scalePoint As Double = 1
-    Public boolMLeader As Boolean = False
-    Public deskStyle As String = "Характерная точка границы образуемого земельного участка"
+    Public deskBlockStyle As String = "Характерная точка границы образуемого земельного участка"
+    Public deskObjectStyle As String = ""
     Public nameTable As String = "Земельные участки образуемые"
     Public boolNumber As Boolean = True
     Public prefNumber As String = ""
@@ -23,74 +25,84 @@ Public Class FormCreatePoint
     Public dictTemplates As Dictionary(Of String, String) = New Dictionary(Of String, String)
     Public PutchTemlateDwg As String = ""
     Public PutchTemlateXML As String = ""
-    Public Sub New()
+    Public categoryZN As String = ""
+    Public tableZN As String = ""
+    Public tablePS As String = ""
+    Public tolerance As Double = 0.01
+    Public typeGeometry As StructureElement.typeGeometryObject = StructureElement.typeGeometryObject.polygon
+    Public arrayAttribytes As String(,) = {}
+    Public nameAttribyteNumber As String = "NUMBER"
+
+    Public Sub New(Optional scaleUserPoint As Integer = 1000, Optional generalDir As String = "")
         ' Этот вызов является обязательным для конструктора.
+        scalePoint = scaleUserPoint
         InitializeComponent()
         '===============================================================================================================
         'закрепление точки
         Dim PointZakr As String() = {"Закрепление отсутствует", "Временный межевой знак", "Долговременный межевой знак"}
-        ComboBox2.DataSource = PointZakr
+        CBox_PointZakr.DataSource = PointZakr
         'метод определения координат
         Dim MetodCoord As String() = {"Геодезический метод", "Метод спутниковых геодезических измерений", "Аналитический метод", "Картометрический метод", "Фотограмметрический метод", "Иное описание"}
-        ComboBox5.DataSource = MetodCoord
+        CBox_MetodCoordinate.DataSource = MetodCoord
         'тип точки
         Dim PrefNumber As String() = {"", "т", "н", "%%u"}
-        ComboBox4.DataSource = PrefNumber
+        CBox_PrefiNumber.DataSource = PrefNumber
 
-        dictTemplates = TemplateXML.readTemplatesXML()
+
+        dictTemplates = TemplateXML.readTemplatesXML(generalDir)
         If dictTemplates.Count > 0 Then
-            ComboBox3.DataSource = dictTemplates.Keys.ToArray()
+            CBox_TemplateXML.DataSource = dictTemplates.Keys.ToArray()
             PutchTemlateXML = dictTemplates.ElementAt(0).Value
             PutchTemlateDwg = PutchTemlateXML.Replace(".xml", ".dwg")
         End If
 
         Dim arrayTypeObject As String() = {}
         If IO.File.Exists(PutchTemlateDwg) = True Then
-            Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Земельные участки образуемые", "Полигон", arrayTypeObject)
+            Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Земельные участки образуемые", StructureElement.typeGeometryObject.block, arrayTypeObject)
         End If
-        ComboBox1.DataSource = arrayTypeObject
+        CBox_DescriptionBlock.DataSource = arrayTypeObject
 
+        If IO.File.Exists(PutchTemlateXML) = True Then
+            Dim arrayCategoryZn As String() = {}
+            Dim boolCategoryZn As String = TemplateXML.FuncReadCategoryToXML(PutchTemlateXML, arrayCategoryZn)
+            If arrayCategoryZn.Length > 0 Then
+                CBox_CategoryZn.DataSource = arrayCategoryZn
+            End If
+        End If
     End Sub
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'ОК
     Private Sub Button2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button2.Click
-        scalePoint = NumericUpDown1.Value / 1000
-        If RadioButton11.Checked = False Then
-            boolMLeader = True
-        Else
-            boolMLeader = False
-        End If
-        deskStyle = ComboBox1.Text
-        nameTable = ComboBox1.Tag
-        If RadioButton15.Checked = False Then
-            boolNumber = False
-        Else
-            boolNumber = True
-        End If
-        prefNumber = ComboBox4.Text
-        hText = NumericUpDown2.Value
+        scalePoint = NUpDn_Scale.Value / 1000
+        deskBlockStyle = CBox_DescriptionBlock.Text
+        deskObjectStyle = CBox_NameZn.Text
+        prefNumber = CBox_PrefiNumber.Text
+        hText = NUpDn_HeightText.Value
         offsetText = NumericUpDown3.Value
-        If CheckBox5.Checked = True Then
+        nameAttribyteNumber = CBox_NameAttributes.Text
+        'погрешность
+        If ChBox_DeltaPoint.Checked = True Then
             boolIcnarisity = True
+            icnarisityPoint = NUpDn_DeltaPoint.Value
         End If
-        icnarisityPoint = NumericUpDown6.Value
-        metodCoord = ComboBox5.Text
-        zakrPoint = ComboBox2.Text
-        If CheckBox1.Checked = True Then
+        metodCoord = CBox_MetodCoordinate.Text
+        zakrPoint = CBox_PointZakr.Text
+        'округление вершин
+        If ChBox_RoundVertex.Checked = True Then
             boolRoundVertex = True
         End If
-        If CheckBox2.Checked = False Then
+        If ChBox_ClockVertex.Checked = False Then
             boolClockVertex = False
         End If
-        If CheckBox3.Checked = False Then
+        If ChBox_SZAmgle.Checked = False Then
             boolSEVertex = False
         End If
-        roundVertex = NumericUpDown7.Value
-        If CheckBox4.Checked = False Then
+        roundVertex = NUpDn_FindPointDistance.Value
+        If ChBox_DoubleCoordinates.Checked = False Then
             boolDublePoint = False
         End If
-
-        Dim indexSelectTemplate As Integer = ComboBox1.SelectedIndex
+        tolerance = NUpDn_FindPointDistance.Value
+        Dim indexSelectTemplate As Integer = CBox_DescriptionBlock.SelectedIndex
         If indexSelectTemplate > -1 Then
             PutchTemlateXML = dictTemplates.ElementAt(indexSelectTemplate).Value
         End If
@@ -105,162 +117,131 @@ Public Class FormCreatePoint
     End Sub
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'масштабы
-    Private Sub RadioButton1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton1.CheckedChanged
-        NumericUpDown1.Value = 10000
+    Private Sub RadioButton1_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale10000.CheckedChanged
+        NUpDn_Scale.Value = 10000
     End Sub
-    Private Sub RadioButton2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton2.CheckedChanged
-        NumericUpDown1.Value = 7000
+    Private Sub RadioButton2_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale8000.CheckedChanged
+        NUpDn_Scale.Value = 7000
     End Sub
-    Private Sub RadioButton3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton3.CheckedChanged
-        NumericUpDown1.Value = 5000
+    Private Sub RadioButton3_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale5000.CheckedChanged
+        NUpDn_Scale.Value = 5000
     End Sub
-    Private Sub RadioButton4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton4.CheckedChanged
-        NumericUpDown1.Value = 2000
+    Private Sub RadioButton4_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale2000.CheckedChanged
+        NUpDn_Scale.Value = 2000
     End Sub
-    Private Sub RadioButton5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton5.CheckedChanged
-        NumericUpDown1.Value = 1000
+    Private Sub RadioButton5_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale1000.CheckedChanged
+        NUpDn_Scale.Value = 1000
     End Sub
-    Private Sub RadioButton6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton6.CheckedChanged
-        NumericUpDown1.Value = 500
+    Private Sub RadioButton6_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale500.CheckedChanged
+        NUpDn_Scale.Value = 500
     End Sub
-    Private Sub RadioButton7_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton7.CheckedChanged
-        NumericUpDown1.Value = 100
+    Private Sub RadioButton7_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtn_Scale100.CheckedChanged
+        NUpDn_Scale.Value = 100
     End Sub
-    Private Sub RadioButton18_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButton18.CheckedChanged
-        NumericUpDown1.Value = 3000
+    Private Sub RadioButton18_CheckedChanged(sender As Object, e As EventArgs) Handles rbtn_Scale3000.CheckedChanged
+        NUpDn_Scale.Value = 3000
     End Sub
-    Private Sub RadioButton17_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButton17.CheckedChanged
-        NumericUpDown1.Value = 200
+    Private Sub RadioButton17_CheckedChanged(sender As Object, e As EventArgs) Handles rbtn_Scale200.CheckedChanged
+        NUpDn_Scale.Value = 200
     End Sub
-    'земельные участки образуемые
-    Private Sub RadioButton10_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton10.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton11.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Земельные участки образуемые", "Блок", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Земельные участки образуемые", "Мультивыноска", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        ComboBox1.Tag = "Земельные участки образуемые"
-    End Sub
-    'здание (строение) сооружение
-    Private Sub RadioButton9_CheckedChanged_1(sender As Object, e As EventArgs) Handles RadioButton9.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton11.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Здания (строения) образуемые", "Блок", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Здания (строения) образуемые", "Мультивыноска", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        ComboBox1.Tag = "Здания (строения) образуемые"
-    End Sub
-    'сооружения линейного типа
-    Private Sub RadioButton22_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButton22.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton11.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Объекты капитального строительства (инженерные коммуникации)", "Блок", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Объекты капитального строительства (инженерные коммуникации)", "Мультивыноска", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        ComboBox1.Tag = "Объекты капитального строительства (инженерные коммуникации)"
-    End Sub
-    'территориальные зоны
-    Private Sub RadioButton20_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButton20.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton11.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Зоны с особыми условиями использования территорий", "Блок", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Зоны с особыми условиями использования территорий", "Мультивыноска", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        ComboBox1.Tag = "Зоны с особыми условиями использования территорий"
-    End Sub
-    'красные линии
-    Private Sub RadioButton21_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButton21.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton11.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Линии градостроительного регулирования", "Блок", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Линии градостроительного регулирования", "Мультивыноска", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        ComboBox1.Tag = "Линии градостроительного регулирования"
-    End Sub
-    'блок Автокад
-    Private Sub RadioButton11_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton11.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton10.Checked = True Then
-                Dim boolFindObj As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Земельные участки образуемые", "Блок", arrayTypeObject)
-            ElseIf RadioButton9.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Здания (строения) образуемые", "Блок", arrayTypeObject)
-            ElseIf RadioButton22.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Объекты капитального строительства (инженерные коммуникации)", "Блок", arrayTypeObject)
-            ElseIf RadioButton20.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Зоны с особыми условиями использования территорий", "Блок", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Линии градостроительного регулирования", "Блок", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        RadioButton19.Enabled = False
-        NumericUpDown3.Value = 1.5
-    End Sub
-    'мультивыноска
-    Private Sub RadioButton13_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles RadioButton13.CheckedChanged
-        Dim arrayTypeObject As String() = {}
-        If IO.File.Exists(PutchTemlateDwg) = True Then
-            If RadioButton10.Checked = True Then
-                Dim boolFindObj As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Земельные участки образуемые", "Мультивыноска", arrayTypeObject)
-            ElseIf RadioButton9.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Здания (строения) образуемые", "Мультивыноска", arrayTypeObject)
-            ElseIf RadioButton22.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Объекты капитального строительства (инженерные коммуникации)", "Мультивыноска", arrayTypeObject)
-            ElseIf RadioButton20.Checked = True Then
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Зоны с особыми условиями использования территорий", "Мультивыноска", arrayTypeObject)
-            Else
-                Dim boolDeskPoint As Boolean = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, "Проект планировки и межевания территории", "Линии градостроительного регулирования", "Мультивыноска", arrayTypeObject)
-            End If
-        End If
-        ComboBox1.DataSource = arrayTypeObject
-        RadioButton19.Enabled = True
-        NumericUpDown3.Value = 5
-    End Sub
-
     '==========================================================================================================
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-    Private Sub ComboBox1_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox1.DrawItem
-        Dim Text As String = Me.ComboBox1.GetItemText(ComboBox1.Items(e.Index))
+    Private Sub ComboBox1_DrawItem(sender As Object, e As DrawItemEventArgs) Handles CBox_DescriptionBlock.DrawItem
+        Dim Text As String = Me.CBox_DescriptionBlock.GetItemText(CBox_DescriptionBlock.Items(e.Index))
         e.DrawBackground()
         Dim br As Drawing.SolidBrush = New Drawing.SolidBrush(e.ForeColor)
         Using br
             e.Graphics.DrawString(Text, e.Font, br, e.Bounds)
             If (e.State And DrawItemState.Selected) = DrawItemState.Selected Then
-                If (Text.Length > Math.Round(Convert.ToDecimal(Me.ComboBox1.Size.Width / 8))) Then
-                    Me.ToolTip1.Show(Text, ComboBox1, e.Bounds.Right, e.Bounds.Bottom)
+                If (Text.Length > Math.Round(Convert.ToDecimal(Me.CBox_DescriptionBlock.Size.Width / 8))) Then
+                    Me.ToolTip1.Show(Text, CBox_DescriptionBlock, e.Bounds.Right, e.Bounds.Bottom)
                 End If
             Else
-                Me.ToolTip1.Hide(ComboBox1)
+                Me.ToolTip1.Hide(CBox_DescriptionBlock)
             End If
             e.DrawFocusRectangle()
         End Using
     End Sub
-    Private Sub ComboBox1_MouseHover(sender As Object, e As EventArgs) Handles ComboBox1.MouseHover
-        ComboBox1.DrawMode = DrawMode.OwnerDrawVariable
+    Private Sub ComboBox1_MouseHover(sender As Object, e As EventArgs) Handles CBox_DescriptionBlock.MouseHover
+        CBox_DescriptionBlock.DrawMode = DrawMode.OwnerDrawVariable
     End Sub
 
     Private Sub FormCreatePoint_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
+    End Sub
+    'выбор категории условных знаков
+    Private Sub CBox_CategoryZn_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CBox_CategoryZn.SelectedIndexChanged
+        categoryZN = CBox_CategoryZn.Text
+        If categoryZN.Trim.Length > 0 Then
+            If IO.File.Exists(PutchTemlateXML) = True Then
+                Dim arrayTableZn As String() = {}
+                Dim boolTableZn As String = TemplateXML.FuncReadTablesToXML(PutchTemlateXML, categoryZN, arrayTableZn)
+                If arrayTableZn.Length > 0 Then
+                    CBox_TableZn.DataSource = arrayTableZn
+                End If
+            End If
+        End If
+    End Sub
+    'выбор таблицы
+    Private Sub CBox_TableZn_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CBox_TableZn.SelectedIndexChanged
+        categoryZN = CBox_CategoryZn.Text
+        tableZN = CBox_TableZn.Text
+        If categoryZN.Trim.Length > 0 And tableZN.Trim.Length > 0 Then
+            If IO.File.Exists(PutchTemlateXML) = True Then
+                Dim arrayObjectZn As String() = {}
+                Dim boolObjectZn As String = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, categoryZN, tableZN, typeGeometry, arrayObjectZn)
+                If arrayObjectZn.Length > 0 Then
+                    CBox_NameZn.DataSource = arrayObjectZn
+                End If
+                Dim arrayObjectBlk As String() = {}
+                Dim boolObjectZnBlk As String = TemplateXML.FuncReadObjectToXML(PutchTemlateXML, categoryZN, tableZN, StructureElement.typeGeometryObject.block, arrayObjectBlk)
+                If arrayObjectBlk.Length > 0 Then
+                    CBox_DescriptionBlock.DataSource = arrayObjectBlk
+                End If
+            End If
+        End If
+    End Sub
+    'выбор блока
+    Private Sub CBox_DescriptionBlock_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CBox_DescriptionBlock.SelectedIndexChanged
+        categoryZN = CBox_CategoryZn.Text
+        tableZN = CBox_TableZn.Text
+        deskBlockStyle = CBox_DescriptionBlock.Text
+        If categoryZN.Trim.Length > 0 And tableZN.Trim.Length > 0 And deskBlockStyle.Trim.Length > 0 Then
+            If IO.File.Exists(PutchTemlateXML) = True Then
+                Dim arrayPropertiesBlock As String(,) = {}
+                Dim boolObjectZn As String = TemplateXML.FuncReadPropertiesObjectToXML(PutchTemlateXML, categoryZN, tableZN, StructureElement.typeGeometryObject.block, deskBlockStyle, arrayPropertiesBlock)
+                If arrayPropertiesBlock.Length > 0 Then
+                    Dim nameBlock As String = MathFunction.findValueToArray2d(arrayPropertiesBlock, "Name")
+                    If nameBlock.Trim.Length > 0 Then
+                        Dim boolReadAttrib As Boolean = TemplateXML.FuncReadBlockAttributesInfoToXML(PutchTemlateXML, nameBlock, arrayAttribytes)
+                        If arrayAttribytes.Length > 0 Then
+                            Dim listAttrib As List(Of String) = New List(Of String)
+                            For i As Integer = 1 To arrayAttribytes.GetUpperBound(0)
+                                Dim tag As String = arrayAttribytes(i, 0)
+                                listAttrib.Add(tag)
+                            Next i
+                            CBox_NameAttributes.DataSource = listAttrib
+                        End If
+                    End If
+                End If
+            End If
+        End If
+
+    End Sub
+    'выбор описания объекта
+    Private Sub CBox_NameZn_SelectedIndexChanged(sender As Object, e As EventArgs) Handles CBox_NameZn.SelectedIndexChanged
+        deskObjectStyle = CBox_NameZn.Text
+        Dim arrayPropertiesTypeObject As String(,) = {}
+        If IO.File.Exists(PutchTemlateDwg) = True Then
+            Dim boolDeskPoint As Boolean = TemplateXML.FuncReadPropertiesObjectToXML(PutchTemlateXML, categoryZN, tableZN, StructureElement.typeGeometryObject.polygon, deskObjectStyle, arrayPropertiesTypeObject)
+            If arrayPropertiesTypeObject.Length > 0 Then
+                typeGeometry = StructureElement.typeGeometryObject.polygon
+            Else
+                boolDeskPoint = TemplateXML.FuncReadPropertiesObjectToXML(PutchTemlateXML, categoryZN, tableZN, StructureElement.typeGeometryObject.polyline, deskObjectStyle, arrayPropertiesTypeObject)
+                If arrayPropertiesTypeObject.Length > 0 Then
+                    typeGeometry = StructureElement.typeGeometryObject.polyline
+                End If
+            End If
+        End If
     End Sub
 End Class

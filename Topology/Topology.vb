@@ -1,4 +1,5 @@
 ﻿Imports Microsoft.SqlServer.Server
+Imports NetTopologySuite
 Imports NetTopologySuite.GeometriesGraph
 
 Public Class Topology
@@ -53,7 +54,7 @@ Public Class Topology
             Return _geometryLineElement
         End Get
         Set(value As NetTopologySuite.Geometries.LineString)
-            _geometrylineElement = value
+            _geometryLineElement = value
         End Set
     End Property
 
@@ -66,58 +67,50 @@ Public Class Topology
             _geometryPointElement = value
         End Set
     End Property
-
-
-
-
     'функция получет все проектные полигоны из предварительного общего словаря
-    Public Shared Function getCadastralParcels(ByVal typeObject As String, ByVal dictCadastralObject As Dictionary(Of String, List(Of Topology))) As Dictionary(Of Integer, Dictionary(Of Integer, Topology))
+    Public Shared Function getCadastralParcel(ByVal number As Integer, ByVal deskObject As String, ByVal dictCadastralObject As Dictionary(Of StructureElement.nameObject, List(Of Geometries.Geometry))) As Dictionary(Of Integer, Dictionary(Of Integer, Topology))
         'словарь номер участка - входящий словарь номер контура и полигон)
-        Dim result As New Dictionary(Of Integer, Dictionary(Of Integer, Topology))
-        If IsNothing(dictCadastralObject) = False Then
-            If dictCadastralObject.Count > 0 Then
-                For i As Integer = 0 To dictCadastralObject.Count - 1
-                    If dictCadastralObject.ContainsKey(typeObject) = True Then
-                        Dim listCadastralObject As List(Of Topology) = dictCadastralObject.Item(typeObject)
-                        If IsNothing(listCadastralObject) = False Then
-                            If listCadastralObject.Count > 0 Then
-                                For j As Integer = 0 To listCadastralObject.Count - 1
-                                    Dim topoPolygon As Topology = listCadastralObject.Item(j)
-                                    Dim dataElement As StructureElement = topoPolygon.StructureElement
-                                    Dim keyParam As String = dataElement.KeyParameter
-                                    Dim numberParcel As Integer = JsonValidator.GetValueFromJson(keyParam, "Number")
-                                    Dim numberCounter As Integer = JsonValidator.GetValueFromJson(keyParam, "NumberCounter")
-                                    If numberParcel = 0 Then
-                                        Dim conditionalParcel As String = JsonValidator.GetValueFromJson(keyParam, "ConditionalNumber")
-                                        If IsNothing(conditionalParcel) = False Then
-                                            numberParcel = DataFormatting.GetNumberBeforeParenthesis(conditionalParcel)
-                                            numberCounter = DataFormatting.GetNumberInParenthesis(conditionalParcel)
-                                        End If
-                                    End If
-                                    If result.Count = 0 Then
-                                        Dim diсtCounter As Dictionary(Of Integer, Topology) = New Dictionary(Of Integer, Topology)
-                                        diсtCounter.Add(numberCounter, topoPolygon)
-                                        result.Add(numberParcel, diсtCounter)
-                                    ElseIf result.ContainsKey(numberParcel) = False Then
-                                        Dim diсtCounter As Dictionary(Of Integer, Topology) = New Dictionary(Of Integer, Topology)
-                                        diсtCounter.Add(numberCounter, topoPolygon)
-                                        result.Add(numberParcel, diсtCounter)
-                                    Else
-                                        Dim dictCounter As Dictionary(Of Integer, Topology) = result.Item(numberParcel)
-                                        If IsNothing(dictCounter) = False Then
-                                            If dictCounter.ContainsKey(numberCounter) = False Then
-                                                dictCounter.Add(numberCounter, topoPolygon)
-                                                result.Item(numberParcel) = dictCounter
-                                            End If
-                                        End If
-                                    End If
-                                Next j
-                            End If
-                        End If
-                    End If
-                Next
-            End If
-        End If
+        'Dim result As New Dictionary(Of Integer, Dictionary(Of Integer, Topology))
+        'If IsNothing(dictCadastralObject) = False Then
+        '    Dim listCadastralObject As List(Of Geometries.Geometry) = dictCadastralObject.Item(deskObject)
+        '    If IsNothing(listCadastralObject) = False Then
+        '        If listCadastralObject.Count > 0 Then
+        '            For i As Integer = 0 To listCadastralObject.Count - 1
+        '                Dim topoPolygon As Geometries.Geometry = listCadastralObject.Item(i)
+        '                Dim dataElement As StructureElement = topoPolygon.UserData
+        '                Dim keyParam As String = dataElement.KeyParameter
+
+        '                Dim numberParcel As Integer = JsonValidator.GetValueFromJson(keyParam, "Number")
+        '                Dim numberCounter As Integer = JsonValidator.GetValueFromJson(keyParam, "NumberCounter")
+        '                If numberParcel = 0 Then
+        '                    Dim conditionalParcel As String = JsonValidator.GetValueFromJson(keyParam, "ConditionalNumber")
+        '                    If IsNothing(conditionalParcel) = False Then
+        '                        numberParcel = DataFormatting.GetNumberBeforeParenthesis(conditionalParcel)
+        '                        numberCounter = DataFormatting.GetNumberInParenthesis(conditionalParcel)
+        '                    End If
+        '                End If
+        '                If result.Count = 0 Then
+        '                    Dim diсtCounter As Dictionary(Of Integer, Topology) = New Dictionary(Of Integer, Topology)
+        '                    diсtCounter.Add(numberCounter, topoPolygon)
+        '                    result.Add(numberParcel, diсtCounter)
+        '                ElseIf result.ContainsKey(numberParcel) = False Then
+        '                    Dim diсtCounter As Dictionary(Of Integer, Topology) = New Dictionary(Of Integer, Topology)
+        '                    diсtCounter.Add(numberCounter, topoPolygon)
+        '                    result.Add(numberParcel, diсtCounter)
+        '                Else
+        '                    Dim dictCounter As Dictionary(Of Integer, Topology) = result.Item(numberParcel)
+        '                    If IsNothing(dictCounter) = False Then
+        '                        If dictCounter.ContainsKey(numberCounter) = False Then
+        '                            dictCounter.Add(numberCounter, topoPolygon)
+        '                            result.Item(numberParcel) = dictCounter
+        '                        End If
+        '                    End If
+        '                End If
+        '            Next j
+        '        End If
+        '    End If
+
+        'End If
         'добавляем в полигоны внутренние островки
         'If result.Count > 0 Then
         '    If result.Count > 1 Then
@@ -172,7 +165,7 @@ Public Class Topology
         '        End If
         '    End If
         'End If
-        Return result
+        'Return result
     End Function
 
 End Class

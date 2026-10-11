@@ -1,8 +1,10 @@
 ﻿Imports NetTopologySuite.Geometries
 Imports NetTopologySuite.Mathematics
+Imports System.Globalization
 Imports System.Net.Mime.MediaTypeNames
 Imports System.Reflection.Metadata
 Imports System.Security.Cryptography
+Imports System.Text.RegularExpressions
 Imports System.Transactions
 
 
@@ -31,6 +33,29 @@ Public Class MathFunction
         Catch ex As Exception
         End Try
     End Function
+    '===================================================================================================
+    'функция ищет значение в двумерном массиве
+    Public Shared Function HasValueToArray2d(ByVal ArrayData As String(,), ByVal value As String, Optional indexVal As Integer = 1) As Boolean
+        HasValueToArray2d = False
+        If IsNothing(value) Then Return ""
+        If IsArray(ArrayData) = False Then Return ""
+        If ArrayData.GetUpperBound(0) < indexVal Then Return ""
+        Try
+            If IsArray(ArrayData) = True Then
+                For i As Integer = 0 To ArrayData.GetUpperBound(1)
+                    Dim userValue As String = ArrayData(indexVal, i)
+                    If IsNothing(userValue) = False Then
+                        If userValue.Trim Like value Then
+                            Return True
+                        End If
+                    End If
+                Next i
+            End If
+        Catch ex As Exception
+        End Try
+    End Function
+
+
     '===================================================================================================
     'функция округляет чило вниз 3.7777777 - 7.77
     Public Shared Function trimDigitFloo(ByVal a As Double, ByVal n As Integer) As Double
@@ -222,10 +247,6 @@ Public Class MathFunction
             Return False
         End Try
     End Function
-
-
-
-
     '===================================================================================================
     'функция вычисляет точку пересечения двух отрезков
     Public Shared Function FuncIntersectLines(ByVal Pt1 As Point, ByVal Pt2 As Point, ByVal Pt3 As Point, ByVal pt4 As Point, ByRef InPoint As Point) As Boolean
@@ -300,84 +321,7 @@ Public Class MathFunction
         Catch ex As Exception
         End Try
     End Function
-    '===================================================================================================
-    'функция делает начальной северозападный угол полилинии (основная функция)
-    Public Shared Function FuncNorthWestVertexFirst(polygon As Polygon) As Polygon
-        ' 1. Получаем все вершины внешнего кольца
-        Dim ring As LinearRing = polygon.ExteriorRing
-        Dim coords As Coordinate() = ring.Coordinates
 
-        ' 2. Находим индекс северо-западной вершины
-        Dim nwIndex As Integer = FindNorthWestVertexIndex(coords)
-
-        ' 3. Перестраиваем массив координат
-        Dim reorderedCoords As Coordinate() = ReorderCoordinates(coords, nwIndex)
-
-        ' 4. Создаем новое внешнее кольцо
-        Dim newRing As New LinearRing(reorderedCoords)
-
-        ' 5. Копируем внутренние кольца без изменений
-        Dim holes As LinearRing() = New LinearRing(polygon.NumInteriorRings - 1) {}
-        For i As Integer = 0 To polygon.NumInteriorRings - 1
-            holes(i) = CType(polygon.GetInteriorRingN(i).Copy(), LinearRing)
-        Next
-
-        Return New Polygon(newRing, holes)
-    End Function
-    ' Находит индекс северо-западной вершины (вспомогательная функция)
-    Private Shared Function FindNorthWestVertexIndex(coords As Coordinate()) As Integer
-        ' Убираем последнюю точку (дубликат первой)
-        Dim workingCoords As Coordinate() = If(coords.Length > 0,
-                                             coords.Take(coords.Length - 1).ToArray(),
-                                             coords)
-
-        If workingCoords.Length = 0 Then Return 0
-
-        Dim bestIndex As Integer = 0
-        Dim bestX As Double = workingCoords(0).X
-        Dim bestY As Double = workingCoords(0).Y
-
-        For i As Integer = 1 To workingCoords.Length - 1
-            Dim currentX As Double = workingCoords(i).X
-            Dim currentY As Double = workingCoords(i).Y
-
-            ' Ищем минимальный X (запад), при равном X - максимальный Y (север)
-            If currentX < bestX - 0.000001 Then
-                bestIndex = i
-                bestX = currentX
-                bestY = currentY
-            ElseIf Math.Abs(currentX - bestX) < 0.000001 Then
-                ' При одинаковом X берем с большим Y (севернее)
-                If currentY > bestY Then
-                    bestIndex = i
-                    bestX = currentX
-                    bestY = currentY
-                End If
-            End If
-        Next
-
-        Return bestIndex
-    End Function
-    ' Перестраивает массив координат, начиная с указанного индекса (вспомогательная функция)
-    Private Shared Function ReorderCoordinates(coords As Coordinate(),
-                                              startIndex As Integer) As Coordinate()
-        ' Убираем последнюю замыкающую точку
-        Dim verticesOnly As Coordinate() = coords.Take(coords.Length - 1).ToArray()
-
-        ' Создаем новый массив
-        Dim reordered As New List(Of Coordinate)()
-
-        ' Добавляем вершины, начиная с startIndex
-        For i As Integer = 0 To verticesOnly.Length - 1
-            Dim index As Integer = (startIndex + i) Mod verticesOnly.Length
-            reordered.Add(verticesOnly(index).Copy())
-        Next
-
-        ' Добавляем замыкающую точку (копию первой)
-        reordered.Add(reordered(0).Copy())
-
-        Return reordered.ToArray()
-    End Function
     '====================================================================================================
     'функция ищет полярные координаты по углу и расстоянию
     Public Shared Function FuncReturnPolarCoordinates2(ByVal startPoint As Point, ByVal a As Double, ByVal l As Double, Optional round As Integer = 3) As Point
@@ -443,5 +387,27 @@ Public Class MathFunction
         End Try
     End Function
 
-
+    ''' <summary>
+    ''' Находит первое вхождение числа в строке и возвращает его.
+    ''' Поддерживает знак минус, целые и дробные числа (разделитель '.' или ',').
+    ''' Если число не найдено — возвращает Nothing.
+    ''' </summary>
+    ''' <param name="input">Входная строка</param>
+    ''' <returns>Число (Double) или Nothing, если число не найдено</returns>
+    Public Shared Function ExtractNumber(ByVal input As String) As Double
+        If String.IsNullOrEmpty(input) Then Return 0.0
+        ' Регулярное выражение:
+        '   -?            — необязательный минус
+        '   \d+           — одна или более цифр
+        '   ([.,]\d+)?    — необязательная дробная часть (точка или запятая + цифры)
+        Dim m As Match = Regex.Match(input, "-?\d+([.,]\d+)?")
+        If Not m.Success Then Return 0.0
+        ' Нормализуем запятую в точку для корректного парсинга
+        Dim numberStr As String = m.Value.Replace(","c, "."c)
+        Dim result As Double
+        If Double.TryParse(numberStr, NumberStyles.Float, CultureInfo.InvariantCulture, result) Then
+            Return result
+        End If
+        Return 0.0
+    End Function
 End Class

@@ -188,7 +188,7 @@ Public Class TemplateXML
 
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'функция читает объекты определенного типа из выбранной таблицы
-    Public Shared Function FuncReadObjectToXML(ByVal putchFileXml As String, ByVal category As String, ByVal table As String, ByVal typeObject As String, ByRef arrayObject As String()) As Boolean
+    Public Shared Function FuncReadObjectToXML(ByVal putchFileXml As String, ByVal category As String, ByVal table As String, ByVal typeGeometryObject As StructureElement.typeGeometryObject, ByRef arrayObject As String()) As Boolean
         FuncReadObjectToXML = False
 
         Try
@@ -198,7 +198,7 @@ Public Class TemplateXML
                 Return False
             End If
 
-            If String.IsNullOrWhiteSpace(category) OrElse String.IsNullOrWhiteSpace(table) OrElse String.IsNullOrWhiteSpace(typeObject) Then
+            If String.IsNullOrWhiteSpace(category) OrElse String.IsNullOrWhiteSpace(table) OrElse String.IsNullOrWhiteSpace(typeGeometryObject) Then
                 arrayObject = New String() {}
                 Return False
             End If
@@ -207,7 +207,7 @@ Public Class TemplateXML
             Dim boolCategory As Boolean = False
             Dim boolTable As Boolean = False
             Dim boolTypeFound As Boolean = False ' Флаг что нашли нужный TypeObject
-
+            Dim typeObject As String = StructureElement.GetDescriptionFromEnumValue(typeGeometryObject)
             Using reader As XmlReader = XmlReader.Create(putchFileXml, New XmlReaderSettings() With {
             .DtdProcessing = DtdProcessing.Ignore,
             .ValidationType = ValidationType.None,
@@ -316,7 +316,7 @@ Public Class TemplateXML
 
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'функция читает свойства объекта из файла xml (Имя категории, Имя таблицы, Тип объекта, Описание объекта, результат - массив с Характеристиками)
-    Public Shared Function FuncReadPropertiesObjectToXML(ByVal putchFileXml As String, ByVal category As String, ByVal table As String, ByVal typeObject As String, ByVal deskObject As String, ByRef dataObjectProperties As String(,)) As Boolean
+    Public Shared Function FuncReadPropertiesObjectToXML(ByVal putchFileXml As String, ByVal category As String, ByVal table As String, ByVal typeGeometryObject As StructureElement.typeGeometryObject, ByVal deskObject As String, ByRef dataObjectProperties As String(,)) As Boolean
         FuncReadPropertiesObjectToXML = False
 
         Try
@@ -327,7 +327,7 @@ Public Class TemplateXML
             End If
 
             If String.IsNullOrWhiteSpace(category) OrElse String.IsNullOrWhiteSpace(table) OrElse
-           String.IsNullOrWhiteSpace(typeObject) OrElse String.IsNullOrWhiteSpace(deskObject) Then
+           String.IsNullOrWhiteSpace(typeGeometryObject) OrElse String.IsNullOrWhiteSpace(deskObject) Then
                 dataObjectProperties = New String(,) {}
                 Return False
             End If
@@ -336,7 +336,7 @@ Public Class TemplateXML
             Dim boolTable As Boolean = False
             Dim boolTypeFound As Boolean = False
             Dim foundTargetRow As Boolean = False
-
+            Dim typeObject As String = StructureElement.GetDescriptionFromEnumValue(typeGeometryObject)
             Using reader As XmlReader = XmlReader.Create(putchFileXml, New XmlReaderSettings() With {
             .DtdProcessing = DtdProcessing.Ignore,
             .ValidationType = ValidationType.None,
@@ -459,6 +459,7 @@ Public Class TemplateXML
     End Function
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    'функция получает информацию о слое из шаблона
     Public Shared Function FuncReadLayerPropertiesInfoToXML(ByVal putchFileXml As String, ByVal nameLayer As String, ByRef arrayProperties As String(,)) As Boolean
         FuncReadLayerPropertiesInfoToXML = False
         Try
@@ -675,7 +676,6 @@ Public Class TemplateXML
             Return False
         End Try
     End Function
-
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'функция читает информацию о характеристиках стиля текста из xml
     Public Shared Function FuncReadMLeaderStylePropertiesInfoToXML(ByVal putchFileXml As String, ByVal nameMLeaderStyle As String, ByRef arrayProperties As String(,)) As Boolean
@@ -749,7 +749,6 @@ Public Class TemplateXML
             Return False
         End Try
     End Function
-
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'функция читает информацию о таблице PS из xml
     Public Shared Function FuncReadTablePSToXML(ByVal putchFileXml As String, ByVal TableName As String, ByRef arrayProperties As String(,)) As Boolean
@@ -833,6 +832,98 @@ Public Class TemplateXML
             Return False
         End Try
     End Function
+    '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    'функция читает информацию об атрибутах блока
+    Public Shared Function FuncReadBlockAttributesInfoToXML(ByVal putchFileXml As String, ByVal nameBlock As String, ByRef arrayProperties As String(,)) As Boolean
+        arrayProperties = New String(,) {}
+        If String.IsNullOrWhiteSpace(putchFileXml) OrElse Not IO.File.Exists(putchFileXml) Then Return False
+        If String.IsNullOrWhiteSpace(nameBlock) Then Return False
+        Try
+            Dim settings As New XmlReaderSettings() With {
+            .DtdProcessing = DtdProcessing.Ignore,
+            .ValidationType = ValidationType.None,
+            .IgnoreWhitespace = True
+        }
+            Using reader As XmlReader = XmlReader.Create(putchFileXml, settings)
+                Dim inTargetBlock As Boolean = False
+                Dim attrDefs As New List(Of Dictionary(Of String, String))()
+                While reader.Read()
+                    Select Case reader.NodeType
+                        Case XmlNodeType.Element
+                            Dim elemName As String = reader.Name
+                            ' --- Вход в <BlockReference> ---
+                            If elemName = "BlockReference" Then
+                                Dim isTarget As Boolean = False
+                                If reader.HasAttributes Then
+                                    For i As Integer = 0 To reader.AttributeCount - 1
+                                        reader.MoveToAttribute(i)
+                                        If reader.Name = "NameBlock" AndAlso reader.Value = nameBlock Then
+                                            isTarget = True
+                                        End If
+                                    Next
+                                    reader.MoveToElement()
+                                End If
+                                inTargetBlock = isTarget
+
+                                ' --- Сбор <AttributeDefinition> внутри нужного блока ---
+                            ElseIf elemName = "AttributeDefinition" AndAlso inTargetBlock Then
+                                Dim props As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+                                If reader.HasAttributes Then
+                                    For i As Integer = 0 To reader.AttributeCount - 1
+                                        reader.MoveToAttribute(i)
+                                        props(reader.Name) = reader.Value
+                                    Next
+                                    reader.MoveToElement()
+                                End If
+                                attrDefs.Add(props)
+                            End If
+
+                        Case XmlNodeType.EndElement
+                            If reader.Name = "BlockReference" Then
+                                inTargetBlock = False
+                            End If
+
+                    End Select
+                End While
+
+                ' --- Формируем результат ---
+                If attrDefs.Count = 0 Then Return False
+
+                ' Собираем полный набор ключей (у разных AttributeDefinition может быть разный набор атрибутов)
+                Dim allKeys As New List(Of String)()
+                For Each props In attrDefs
+                    For Each k In props.Keys
+                        If Not allKeys.Contains(k) Then allKeys.Add(k)
+                    Next
+                Next
+
+                ReDim arrayProperties(attrDefs.Count, allKeys.Count - 1)
+
+                ' Строка 0 — заголовки
+                For j As Integer = 0 To allKeys.Count - 1
+                    arrayProperties(0, j) = allKeys(j)
+                Next
+
+                ' Строки 1..N — значения для каждого AttributeDefinition
+                For i As Integer = 0 To attrDefs.Count - 1
+                    For j As Integer = 0 To allKeys.Count - 1
+                        Dim v As String = Nothing
+                        attrDefs(i).TryGetValue(allKeys(j), v)
+                        arrayProperties(i + 1, j) = If(v, String.Empty)
+                    Next
+                Next
+
+                Return True
+            End Using
+
+        Catch ex As Exception
+            arrayProperties = New String(,) {}
+            Return False
+        End Try
+    End Function
+
+
+
 
     Public Shared Function readFieldDataToXML(putchFileXML As String, nameField As String, ByRef arrayValue As String()) As Boolean
         Try

@@ -9,7 +9,27 @@ Public Class WinFormDataGrid
         If IsNothing(arrayData) = True Then Return False
         If arrayData.GetUpperBound(1) > 0 Then
             userDataGrid.Rows.Clear()
-            Dim countRows As Integer = 0
+            ' Устанавливаем имена столбцов
+            If String.IsNullOrEmpty(userDataGrid.Columns(0).HeaderText) Then
+                userDataGrid.Columns(0).HeaderText = "Свойство"
+            End If
+
+            If String.IsNullOrEmpty(userDataGrid.Columns(1).HeaderText) Then
+                userDataGrid.Columns(1).HeaderText = "Значение"
+            End If
+
+            ' Отключаем автоматическую генерацию
+            userDataGrid.AutoGenerateColumns = False
+
+            ' Проверяем, что второй столбец - TextBox, если нет - преобразуем
+            If Not TypeOf userDataGrid.Columns(1) Is DataGridViewTextBoxColumn Then
+                Dim newTextColumn As New DataGridViewTextBoxColumn()
+                newTextColumn.HeaderText = userDataGrid.Columns(1).HeaderText
+                newTextColumn.Name = userDataGrid.Columns(1).Name
+                newTextColumn.Width = userDataGrid.Columns(1).Width
+                userDataGrid.Columns.RemoveAt(1)
+                userDataGrid.Columns.Insert(1, newTextColumn)
+            End If
             For i As Integer = 0 To arrayData.GetUpperBound(1)
                 Dim nameField As String = arrayData(0, i)
                 Dim deskField As String = arrayData(2, i)
@@ -22,13 +42,20 @@ Public Class WinFormDataGrid
                 If IsNothing(defaultData) = True Then defaultData = ""
                 If IsNothing(value) = True Then value = ""
                 If defaultData.Trim.Length = 0 And value.Trim.Length > 0 Then defaultData = value
-                userDataGrid.Rows.Add(1)
-                userDataGrid.Rows(countRows).Cells(0).Value = deskField
-                userDataGrid.Rows(countRows).Tag = nameField
-                userDataGrid.Rows(countRows).Cells(1).Value = defaultData
-                countRows += 1
+                Dim rowIndex As Integer = userDataGrid.Rows.Add()
+                Dim row As DataGridViewRow = userDataGrid.Rows(rowIndex)
+                ' Первый столбец - ключ
+                row.Cells(0).Value = deskField
+                row.Tag = nameField
+                row.Cells(1).Value = defaultData
+                'userDataGrid.Rows.Add()
+                'userDataGrid.Rows(countRows).Cells(0).Value = deskField
+                'userDataGrid.Rows(countRows).Tag = nameField
+                'userDataGrid.Rows(countRows).Cells(1).Value = defaultData
+                'countRows += 1
             Next
         End If
+        userDataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
         Return True
     End Function
 
