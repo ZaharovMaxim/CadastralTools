@@ -1,3 +1,11 @@
 .vs/
+*.vsidx
+*.suo
+
+# Сборки и временные файлы
 bin/
 obj/
+*.user
+*.cache
+*.tmp
+Thumbs.db
