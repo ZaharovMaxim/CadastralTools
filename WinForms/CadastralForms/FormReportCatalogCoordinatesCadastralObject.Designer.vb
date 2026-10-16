@@ -1,9 +1,9 @@
-<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class FormReportCatalogCoordinatesCadastralObject
     Inherits System.Windows.Forms.Form
 
     'Форма переопределяет dispose для очистки списка компонентов.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class FormReportCatalogCoordinatesCadastralObject
     'Примечание: следующая процедура является обязательной для конструктора форм Windows Forms
     'Для ее изменения используйте конструктор форм Windows Window.
     'Не изменяйте ее в редакторе исходного кода.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.RButton_CSV = New System.Windows.Forms.RadioButton()
@@ -72,10 +72,10 @@ Partial Class FormReportCatalogCoordinatesCadastralObject
         Me.RButton_CSV.AutoSize = True
         Me.RButton_CSV.Location = New System.Drawing.Point(4, 87)
         Me.RButton_CSV.Name = "RButton_CSV"
-        Me.RButton_CSV.Size = New System.Drawing.Size(211, 17)
+        Me.RButton_CSV.Size = New System.Drawing.Size(186, 17)
         Me.RButton_CSV.TabIndex = 7
         Me.RButton_CSV.TabStop = True
-        Me.RButton_CSV.Text = "Файл формата *.csv (межевой план)"
+        Me.RButton_CSV.Text = "Файл формата *.csv (Технокад)"
         Me.RButton_CSV.UseVisualStyleBackColor = True
         '
         'RButton_MapInfo
@@ -315,5 +315,4 @@ Partial Class FormReportCatalogCoordinatesCadastralObject
     Friend WithEvents Label5 As Windows.Forms.Label
     Friend WithEvents CBox_TypeObject As Windows.Forms.ComboBox
     Friend WithEvents OpenFileDialog1 As Windows.Forms.OpenFileDialog
-
 End Class

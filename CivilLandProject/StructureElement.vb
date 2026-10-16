@@ -151,6 +151,7 @@ Public Class StructureElement
     Private _idElement As String
     Private _note As String
     Private _idObject As String
+    Private _handleSource As String = String.Empty
     ' Конструктор по умолчанию
     Public Sub New()
         _label = String.Empty
@@ -329,6 +330,21 @@ Public Class StructureElement
             _idObject = value
         End Set
     End Property
+
+    ' Handle исходного примитива CAD (заполняется платформенным проектом при создании геометрии,
+    ' в памяти; в XRecords не сохраняется). Используется для экспорта объекта в отдельный DWG
+    Public Property HandleSource As String
+        Get
+            Return _handleSource
+        End Get
+        Set(value As String)
+            _handleSource = value
+        End Set
+    End Property
+
+    ' Handle'и внутренних островков и вложенных контуров, врезанных в объект как дырки
+    '(заполняется при объединении геометрии; для экспорта объекта в отдельный DWG)
+    Public ListHandleIslands As New List(Of String)
 
     Public Shared Function GetEnumDescriptionByName(enumType As Type, enumName As String) As String
         ' Проверяем, что переданный тип действительно является перечислением

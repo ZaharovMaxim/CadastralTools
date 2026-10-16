@@ -49,6 +49,14 @@ Public Class SelectCadastralObject
                                         sourcePolygon = updated
                                         If IsNothing(sourcePolygon) = False Then
                                             sourceChanged = True
+                                            'handle вложенного контура (для экспорта в отдельный DWG)
+                                            If IsNothing(dataDestPolygon.HandleSource) = False Then
+                                                If dataDestPolygon.HandleSource.Trim.Length > 0 Then
+                                                    If dataSourcePolygon.ListHandleIslands.Contains(dataDestPolygon.HandleSource) = False Then
+                                                        dataSourcePolygon.ListHandleIslands.Add(dataDestPolygon.HandleSource)
+                                                    End If
+                                                End If
+                                            End If
                                         End If
                                     End If
                                 End If
@@ -94,6 +102,14 @@ Public Class SelectCadastralObject
                                             sourcePolygon = updated
                                             If IsNothing(sourcePolygon) = False Then
                                                 sourceChanged = True
+                                                'handle внутреннего островка (для экспорта в отдельный DWG)
+                                                If IsNothing(userRing.HandleSource) = False Then
+                                                    If userRing.HandleSource.Trim.Length > 0 Then
+                                                        If userPolygon.ListHandleIslands.Contains(userRing.HandleSource) = False Then
+                                                            userPolygon.ListHandleIslands.Add(userRing.HandleSource)
+                                                        End If
+                                                    End If
+                                                End If
                                             End If
                                         End If
                                     End If
