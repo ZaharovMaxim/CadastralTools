@@ -1,5 +1,5 @@
 <Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class FormCreatePoint
+Partial Class FormCreatePointCadastral
     Inherits System.Windows.Forms.Form
 
     'Форма переопределяет dispose для очистки списка компонентов.
@@ -610,7 +610,7 @@ Partial Class FormCreatePoint
         Me.Label6.TabIndex = 6
         Me.Label6.Text = "Префикс номера"
         '
-        'FormCreatePoint
+        'FormCreatePointCadastral
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
@@ -627,7 +627,7 @@ Partial Class FormCreatePoint
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
         Me.MaximumSize = New System.Drawing.Size(696, 413)
         Me.MinimumSize = New System.Drawing.Size(696, 413)
-        Me.Name = "FormCreatePoint"
+        Me.Name = "FormCreatePointCadastral"
         Me.Text = "Создать точки"
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()

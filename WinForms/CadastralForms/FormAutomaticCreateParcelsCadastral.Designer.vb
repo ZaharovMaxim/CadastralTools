@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class FormAutomaticCreateParcels
+Partial Class FormAutomaticCreateParcelsCadastral
     Inherits System.Windows.Forms.Form
 
     'Форма переопределяет dispose для очистки списка компонентов.
@@ -229,7 +229,7 @@ Partial Class FormAutomaticCreateParcels
         Me.Label4.TabIndex = 4
         Me.Label4.Text = "Номер участка"
         '
-        'FormAutomaticCreateParcels
+        'FormAutomaticCreateParcelsCadastral
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
@@ -239,7 +239,7 @@ Partial Class FormAutomaticCreateParcels
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.GroupBox2)
         Me.Controls.Add(Me.GroupBox1)
-        Me.Name = "FormAutomaticCreateParcels"
+        Me.Name = "FormAutomaticCreateParcelsCadastral"
         Me.Text = "Автоматическое создание участков"
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()

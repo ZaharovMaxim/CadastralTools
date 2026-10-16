@@ -949,6 +949,73 @@ Public Class FuncNetTopologySuite
     Public Function GetInteriorPoint(polygon As Polygon) As Point
         Return polygon.InteriorPoint
     End Function
+    '============================================================================================================================
+    'середина полилинии (точка на половине длины)
+    Public Shared Function GetMidPointLineString(line As LineString) As Point
+        If line Is Nothing OrElse line.IsEmpty Then
+            Throw New ArgumentException("LineString пустой или null", "line")
+        End If
+        If line.NumPoints = 1 Then
+            Return line.Factory.CreatePoint(line.GetCoordinateN(0))
+        End If
+        Dim totalLength As Double = line.Length
+        If totalLength = 0 Then
+            Return line.Factory.CreatePoint(line.GetCoordinateN(0))
+        End If
+        Dim half As Double = totalLength / 2
+        Dim accumulated As Double = 0
+        For i As Integer = 0 To line.NumPoints - 2
+            Dim c0 As Coordinate = line.GetCoordinateN(i)
+            Dim c1 As Coordinate = line.GetCoordinateN(i + 1)
+            Dim segLen As Double = c0.Distance(c1)
+            If accumulated + segLen >= half Then
+                Dim remaining As Double = half - accumulated
+                Dim t As Double = If(segLen = 0, 0, remaining / segLen)
+                Dim x As Double = c0.X + (c1.X - c0.X) * t
+                Dim y As Double = c0.Y + (c1.Y - c0.Y) * t
+                Return line.Factory.CreatePoint(New Coordinate(x, y))
+            End If
+            accumulated += segLen
+        Next
+        Return line.Factory.CreatePoint(line.GetCoordinateN(line.NumPoints - 1))
+    End Function
+    'направление полилинии в середине (угол в радианах)
+    Public Shared Function GetMidPointDirection(line As LineString) As Double
+        If line Is Nothing OrElse line.IsEmpty Then
+            Throw New ArgumentException("LineString пустой или null", "line")
+        End If
+        If line.NumPoints = 1 Then
+            Return 0
+        End If
+        Dim totalLength As Double = line.Length
+        If totalLength = 0 Then
+            Return 0
+        End If
+        Dim half As Double = totalLength / 2
+        Dim accumulated As Double = 0
+        For i As Integer = 0 To line.NumPoints - 2
+            Dim c0 As Coordinate = line.GetCoordinateN(i)
+            Dim c1 As Coordinate = line.GetCoordinateN(i + 1)
+            Dim segLen As Double = c0.Distance(c1)
+            If accumulated + segLen >= half Then
+                Dim angle As Double = Math.Atan2(c1.Y - c0.Y, c1.X - c0.X)
+                Return NormalizeAngle(angle)
+            End If
+            accumulated += segLen
+        Next
+        Dim last0 As Coordinate = line.GetCoordinateN(line.NumPoints - 2)
+        Dim last1 As Coordinate = line.GetCoordinateN(line.NumPoints - 1)
+        Return NormalizeAngle(Math.Atan2(last1.Y - last0.Y, last1.X - last0.X))
+    End Function
+    'нормализация угла в диапазон [0, 2*Pi)
+    Public Shared Function NormalizeAngle(angle As Double) As Double
+        Dim twoPi As Double = Math.PI * 2
+        Dim result As Double = angle Mod twoPi
+        If result < 0 Then
+            result += twoPi
+        End If
+        Return result
+    End Function
     ' Геометрический центр (центр bounding box) - может быть вне полигона
     Public Function GetGeometricCenter(polygon As Polygon) As Point
         Dim envelope = polygon.EnvelopeInternal

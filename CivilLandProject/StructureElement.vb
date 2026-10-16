@@ -1,4 +1,4 @@
-﻿Imports System
+Imports System
 Imports System.Collections.ObjectModel
 Imports System.ComponentModel
 Imports System.Net
@@ -55,6 +55,7 @@ Public Class StructureElement
         <Description("Красные линии")> RedLines = 63
         <Description("Граница лесничества")> ForestryBoundary = 64
         <Description("Граница водного объекта")> WaterBoundary = 65
+        <Description("Граница субъекта Российской Федерации")> SubjectBoundary = 66
         '=====================================================================================
         ' ПРОЕКТИРУЕМЫЙ ЗУ
         <Description("Земельный участок образуемый")> ProjectParcel = 100

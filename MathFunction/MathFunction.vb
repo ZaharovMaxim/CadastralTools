@@ -1,4 +1,4 @@
-﻿Imports NetTopologySuite.Geometries
+Imports NetTopologySuite.Geometries
 Imports NetTopologySuite.Mathematics
 Imports System.Globalization
 Imports System.Net.Mime.MediaTypeNames
@@ -409,5 +409,25 @@ Public Class MathFunction
             Return result
         End If
         Return 0.0
+    End Function
+    '============================================================================================================================
+    'полярные координаты: точка на расстоянии lenght от startPoint под углом angle (радианы)
+    Public Shared Function getPolarCoordinates(startPoint As Point, angle As Double, lenght As Double, Optional round As Integer = 3) As Point
+        Dim result As Point = startPoint
+        Try
+            Dim X As Double = startPoint.X + lenght * Math.Cos(angle)
+            Dim Y As Double = startPoint.Y + lenght * Math.Sin(angle)
+            result = New Point(Math.Round(X, round), Math.Round(Y, round))
+        Catch ex As Exception
+        End Try
+        Return result
+    End Function
+    'градусы в радианы
+    Public Shared Function DegreesToRadians(degrees As Double) As Double
+        Return degrees * Math.PI / 180
+    End Function
+    'радианы в градусы
+    Public Shared Function RadiansToDegrees(radians As Double) As Double
+        Return radians * 180 / Math.PI
     End Function
 End Class

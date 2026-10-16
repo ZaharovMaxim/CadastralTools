@@ -1,6 +1,6 @@
 ﻿Imports System.Windows.Forms
 
-Public Class FormAutomaticCreateParcels
+Public Class FormAutomaticCreateParcelsCadastral
     Public dictTemplateXML As Dictionary(Of String, String) = New Dictionary(Of String, String)
     Public putchTemplateXML As String = ""
     Public putchSemanticData As String = ""
@@ -125,7 +125,7 @@ Public Class FormAutomaticCreateParcels
         End If
     End Sub
 
-    Private Sub FormAutomaticCreateParcels_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Sub FormAutomaticCreateParcelsCadastral_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
     End Sub
 

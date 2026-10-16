@@ -3,7 +3,7 @@ Imports System.IO
 Imports System.Xml
 Imports CadastralTools.StructureElement
 
-Public Class FormCreatePoint
+Public Class FormCreatePointCadastral
     Public boolShow As Boolean = False
     Public scalePoint As Double = 1
     Public deskBlockStyle As String = "Характерная точка границы образуемого земельного участка"
@@ -166,7 +166,7 @@ Public Class FormCreatePoint
         CBox_DescriptionBlock.DrawMode = DrawMode.OwnerDrawVariable
     End Sub
 
-    Private Sub FormCreatePoint_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Sub FormCreatePointCadastral_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
     End Sub
     'выбор категории условных знаков

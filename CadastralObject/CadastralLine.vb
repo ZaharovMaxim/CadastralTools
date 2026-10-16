@@ -1,4 +1,5 @@
-﻿Imports CadastralTools.StructureElement
+Imports CadastralTools.StructureElement
+
 Public Class CadastralLine
     'получить все контуры по номеру объекта
     Public Shared Function getCountersByNumber(ByVal NumberCadastralObject As Integer, ByVal listCadastralObject As List(Of NetTopologySuite.Geometries.Geometry)) As Dictionary(Of Integer, NetTopologySuite.Geometries.Geometry)
@@ -20,9 +21,9 @@ Public Class CadastralLine
                     Dim dataLineString As StructureElement = tempLineString.UserData
                     Dim keyParam As String = dataLineString.KeyParameter
                     Dim conditionalNumber As String = JsonValidator.GetValueFromJson(keyParam, "ConditionalNumber")
-                    Dim numberParcel As Integer = Val(DataFormatting.GetNumberBeforeParenthesis(conditionalNumber))
+                    Dim numberParcel As Integer = CInt(Math.Round(Val(DataFormatting.GetNumberBeforeParenthesis(conditionalNumber))))
                     If numberParcel = NumberCadastralObject Then
-                        Dim numberCounter As Integer = Val(DataFormatting.GetNumberInParenthesis(conditionalNumber))
+                        Dim numberCounter As Integer = CInt(Math.Round(Val(DataFormatting.GetNumberInParenthesis(conditionalNumber))))
                         If result.ContainsKey(numberCounter) = False Then
                             result.Add(numberCounter, tempLineString)
                             If numberCounter > largNumber Then largNumber = numberCounter
@@ -42,13 +43,13 @@ Public Class CadastralLine
                 End If
             Next
         End If
-        Return result
+        Return result.OrderBy(Function(pair) pair.Key).ToDictionary(Function(pair) pair.Key, Function(pair) pair.Value)
     End Function
     'получить контур по его номеру
     Public Shared Function getCounterByNumber(ByVal conditionalCounter As String, ByVal listCadastralObject As List(Of NetTopologySuite.Geometries.Geometry), ByVal listCadastralOstrov As List(Of NetTopologySuite.Geometries.Geometry)) As NetTopologySuite.Geometries.LineString
         Dim result As NetTopologySuite.Geometries.LineString = Nothing
         If IsNothing(conditionalCounter) = True Then Return result
-        If conditionalCounter = 0 Then Return result
+        If Val(conditionalCounter) = 0 Then Return result
         If IsNothing(listCadastralObject) = True Then Return result
         If listCadastralObject.Count = 0 Then Return result
         Dim classNetTopologySuite As FuncNetTopologySuite = New FuncNetTopologySuite()

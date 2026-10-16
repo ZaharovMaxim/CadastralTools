@@ -1,4 +1,4 @@
-﻿Imports CadastralTools.StructureElement
+Imports CadastralTools.StructureElement
 
 Public Class CadastralPolygon
     Public Shared Function getCounter(ByVal counter As NetTopologySuite.Geometries.Geometry, ByVal listCadastralObject As List(Of NetTopologySuite.Geometries.Geometry), ByVal listCadastralOstrov As List(Of NetTopologySuite.Geometries.Geometry)) As NetTopologySuite.Geometries.Polygon
@@ -60,7 +60,7 @@ Public Class CadastralPolygon
     End Function
 
     'получить контур по его номеру
-    Public Shared Function getCounterByNumber(ByVal conditionalParcel As String, ByVal listCadastralObject As List(Of NetTopologySuite.Geometries.Geometry), ByVal listCadastralOstrov As List(Of NetTopologySuite.Geometries.Geometry)) As NetTopologySuite.Geometries.Polygon
+    Public Shared Function getCounterByNumber(ByVal conditionalParcel As String, ByVal listCadastralObject As List(Of NetTopologySuite.Geometries.Geometry)) As NetTopologySuite.Geometries.Polygon
         Dim parentCounter As NetTopologySuite.Geometries.Geometry = Nothing
         If IsNothing(conditionalParcel) = True Then Return parentCounter
         If conditionalParcel.Trim.Length = 0 Then Return parentCounter
@@ -73,54 +73,14 @@ Public Class CadastralPolygon
                 Continue For
             End If
             dataPolygon = tempPolygon.UserData
-            If IsNothing(dataPolygon) = True Then
-                Continue For
-            End If
-            Dim tempConditionalNumber As String = JsonValidator.GetValueFromJson(dataPolygon.KeyParameter, "ConditionalNumber")
-            If conditionalParcel Like tempConditionalNumber Then
-                parentCounter = tempPolygon
-                listCadastralObject.Remove(tempPolygon)
-                Exit For
-            End If
-        Next i
-        Dim classNetTopologySuite As FuncNetTopologySuite = New FuncNetTopologySuite()
-        If IsNothing(parentCounter) = False Then
-            If parentCounter.Area > 0 Then
-                For i As Integer = 0 To listCadastralObject.Count - 1
-                    Dim tempPolygon As NetTopologySuite.Geometries.Polygon = listCadastralObject.Item(i)
-                    If IsNothing(tempPolygon) = True Then
-                        Continue For
-                    End If
-                    If tempPolygon.Area < parentCounter.Area Then
-                        Dim boolUnion As Boolean = classNetTopologySuite.IsPolygonInside(parentCounter, tempPolygon)
-                        If boolUnion = True Then
-                            parentCounter = classNetTopologySuite.AddPolygonAsHole(parentCounter, tempPolygon)
-                        End If
-                    End If
-                Next i
-                If IsNothing(listCadastralOstrov) = False Then
-                    If listCadastralOstrov.Count > 0 Then
-                        For Each entityOstrov As NetTopologySuite.Geometries.Geometry In listCadastralOstrov
-                            If IsNothing(entityOstrov) = False Then
-                                Dim polygonOstrov As NetTopologySuite.Geometries.Polygon = entityOstrov
-                                Dim dataOstrov As StructureElement = entityOstrov.UserData
-                                If IsNothing(dataOstrov) = True Then
-                                    Dim keyParam As String = dataOstrov.KeyParameter
-                                    Dim strTypeObject As String = JsonValidator.GetValueFromJson(keyParam, "ParentNameType")
-                                    Dim typeObject As StructureElement.nameObject = StructureElement.GetEnumByStringValue(GetType(nameObject), strTypeObject)
-                                    If typeObject = dataPolygon.NameTypeObject Then
-                                        Dim boolUnion As Boolean = classNetTopologySuite.IsPolygonInside(parentCounter, polygonOstrov)
-                                        If boolUnion = True Then
-                                            parentCounter = classNetTopologySuite.AddPolygonAsHole(parentCounter, polygonOstrov)
-                                        End If
-                                    End If
-                                End If
-                            End If
-                        Next
-                    End If
+            If IsNothing(dataPolygon) = False Then
+                Dim tempConditionalNumber As String = JsonValidator.GetValueFromJson(dataPolygon.KeyParameter, "ConditionalNumber")
+                If conditionalParcel Like tempConditionalNumber Then
+                    parentCounter = tempPolygon
+                    Exit For
                 End If
             End If
-        End If
+        Next i
         Return parentCounter
     End Function
     '===============================================================================================================================
@@ -146,9 +106,9 @@ Public Class CadastralPolygon
                     Dim keyParam As String = dataPolygon.KeyParameter
                     Dim conditionalNumber As String = JsonValidator.GetValueFromJson(keyParam, "ConditionalNumber")
                     If IsNothing(conditionalNumber) = False Then
-                        Dim numberParcel As Integer = Val(DataFormatting.GetNumberBeforeParenthesis(conditionalNumber))
+                        Dim numberParcel As Integer = CInt(Math.Round(Val(DataFormatting.GetNumberBeforeParenthesis(conditionalNumber))))
                         If numberParcel = NumberCadastralObject Then
-                            Dim numberCounter As Integer = Val(DataFormatting.GetNumberInParenthesis(conditionalNumber))
+                            Dim numberCounter As Integer = CInt(Math.Round(Val(DataFormatting.GetNumberInParenthesis(conditionalNumber))))
                             If result.ContainsKey(numberCounter) = False Then
                                 result.Add(numberCounter, tempPolygon)
                                 If numberCounter > largNumber Then largNumber = numberCounter
@@ -169,7 +129,7 @@ Public Class CadastralPolygon
                 End If
             Next
         End If
-        Return result
+        Return result.OrderBy(Function(pair) pair.Key).ToDictionary(Function(pair) pair.Key, Function(pair) pair.Value)
     End Function
 
 

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -69,6 +69,26 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net.Http" />
+    <COMReference Include="Microsoft.Office.Interop.Excel">
+      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>9</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>False</Private>
+    </COMReference>
+    <COMReference Include="Microsoft.Office.Interop.Word">
+      <Guid>{00020905-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>8</VersionMajor>
+      <VersionMinor>7</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>False</Private>
+    </COMReference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -83,12 +103,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CadastralFunction\CadastralInfo.vb" />
-    <Compile Include="CadastralLeader\CadastralLeader.vb" />
-    <Compile Include="CadastralLeader\CadastralLine.vb" />
-    <Compile Include="CadastralLeader\CadastralOstrov.vb" />
-    <Compile Include="CadastralLeader\CadastralPolygon.vb" />
+    <Compile Include="CadastralObject\CadastralLeader.vb" />
+    <Compile Include="CadastralObject\CadastralLine.vb" />
+    <Compile Include="CadastralObject\CadastralOstrov.vb" />
+    <Compile Include="CadastralObject\CadastralPolygon.vb" />
+    <Compile Include="CadastralObject\SelectCadastralObject.vb" />
     <Compile Include="CivilLandProject\CadastralPoint\CadastralPoint.vb" />
     <Compile Include="CivilLandProject\ImportKPT\ImportKPT.vb" />
+    <Compile Include="CivilLandProject\ImportKPT\ImportMapPlan.vb" />
+    <Compile Include="CivilLandProject\Report\CatalogCoordinates.vb" />
     <Compile Include="CivilLandProject\WPFDataGrid.vb" />
     <Compile Include="CivilLandProject\StructureElement.vb" />
     <Compile Include="DataFormatting\DataFormatting.vb" />
@@ -114,10 +137,10 @@
     <Compile Include="SupportFiles\SupportFiles.vb" />
     <Compile Include="TemplateXML\TemplateXML.vb" />
     <Compile Include="Topology\Topology.vb" />
-    <Compile Include="WinForms\CadastralForms\FormAutomaticCreateParcels.Designer.vb">
-      <DependentUpon>FormAutomaticCreateParcels.vb</DependentUpon>
+    <Compile Include="WinForms\CadastralForms\FormAutomaticCreateParcelsCadastral.Designer.vb">
+      <DependentUpon>FormAutomaticCreateParcelsCadastral.vb</DependentUpon>
     </Compile>
-    <Compile Include="WinForms\CadastralForms\FormAutomaticCreateParcels.vb">
+    <Compile Include="WinForms\CadastralForms\FormAutomaticCreateParcelsCadastral.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="WinForms\CadastralForms\FormCreateCadastralObject.Designer.vb">
@@ -126,10 +149,16 @@
     <Compile Include="WinForms\CadastralForms\FormCreateCadastralObject.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WinForms\CadastralForms\FormCreatePoint.Designer.vb">
-      <DependentUpon>FormCreatePoint.vb</DependentUpon>
+    <Compile Include="WinForms\CadastralForms\FormCreateLabelParcels.Designer.vb">
+      <DependentUpon>FormCreateLabelParcels.vb</DependentUpon>
     </Compile>
-    <Compile Include="WinForms\CadastralForms\FormCreatePoint.vb">
+    <Compile Include="WinForms\CadastralForms\FormCreateLabelParcels.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreatePointCadastral.Designer.vb">
+      <DependentUpon>FormCreatePointCadastral.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreatePointCadastral.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="WinForms\CadastralForms\FormImportKPT.Designer.vb">
@@ -144,6 +173,12 @@
     <Compile Include="WinForms\CadastralForms\FormImportPoint.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WinForms\CadastralForms\FormReportCatalogCoordinatesCadastralObject.Designer.vb">
+      <DependentUpon>FormReportCatalogCoordinatesCadastralObject.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormReportCatalogCoordinatesCadastralObject.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="WinForms\CadastralForms\FormSelectObject.Designer.vb">
       <DependentUpon>FormSelectObject.vb</DependentUpon>
     </Compile>
@@ -151,6 +186,42 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CivilLandProject\WinFormDataGrid.vb" />
+    <Compile Include="CivilForestProject\ClsOnliXml.vb" />
+    <Compile Include="CivilForestProject\ClsEditTaxationXml.vb" />
+    <Compile Include="CivilForestProject\ClsProjectForestryXml.vb" />
+    <Compile Include="CivilForestProject\ClsProjectForestryXmlWriter.vb" />
+    <Compile Include="CivilForestProject\ClsTaxationDescriptionXml.vb" />
+    <Compile Include="CivilForestProject\ClsTaxationDescriptionXmlWriter.vb" />
+    <Compile Include="WinForms\ForestForms\frmOnli.Designer.vb">
+      <DependentUpon>frmOnli.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmOnli.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmEditTaxation.Designer.vb">
+      <DependentUpon>frmEditTaxation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmEditTaxation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmTaxationDescription.Designer.vb">
+      <DependentUpon>frmTaxationDescription.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmTaxationDescription.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmProjectForestry.Designer.vb">
+      <DependentUpon>frmProjectForestry.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\frmProjectForestry.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\ctlForestUserWF.Designer.vb">
+      <DependentUpon>ctlForestUserWF.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\ForestForms\ctlForestUserWF.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="WinForms\FormUpdateProgram.Designer.vb">
       <DependentUpon>FormUpdateProgram.vb</DependentUpon>
     </Compile>
@@ -165,20 +236,26 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="WinForms\CadastralForms\FormAutomaticCreateParcels.resx">
-      <DependentUpon>FormAutomaticCreateParcels.vb</DependentUpon>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormAutomaticCreateParcelsCadastral.resx">
+      <DependentUpon>FormAutomaticCreateParcelsCadastral.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\CadastralForms\FormCreateCadastralObject.resx">
       <DependentUpon>FormCreateCadastralObject.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WinForms\CadastralForms\FormCreatePoint.resx">
-      <DependentUpon>FormCreatePoint.vb</DependentUpon>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormCreateLabelParcels.resx">
+      <DependentUpon>FormCreateLabelParcels.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormCreatePointCadastral.resx">
+      <DependentUpon>FormCreatePointCadastral.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\CadastralForms\FormImportKPT.resx">
       <DependentUpon>FormImportKPT.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\CadastralForms\FormImportPoint.resx">
       <DependentUpon>FormImportPoint.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormReportCatalogCoordinatesCadastralObject.resx">
+      <DependentUpon>FormReportCatalogCoordinatesCadastralObject.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\CadastralForms\FormSelectObject.resx">
       <DependentUpon>FormSelectObject.vb</DependentUpon>
@@ -188,6 +265,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\FormUpdateProgram.resx">
       <DependentUpon>FormUpdateProgram.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmOnli.resx">
+      <DependentUpon>frmOnli.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmEditTaxation.resx">
+      <DependentUpon>frmEditTaxation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmTaxationDescription.resx">
+      <DependentUpon>frmTaxationDescription.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\frmProjectForestry.resx">
+      <DependentUpon>frmProjectForestry.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\ForestForms\ctlForestUserWF.resx">
+      <DependentUpon>ctlForestUserWF.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
