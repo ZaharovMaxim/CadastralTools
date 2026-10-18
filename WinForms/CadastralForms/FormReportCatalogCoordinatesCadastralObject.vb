@@ -15,8 +15,8 @@ Public Class FormReportCatalogCoordinatesCadastralObject
         '===================================================================================================
         'список шаблонов вывода
         listDocFiles = New List(Of String)
-        listDocFiles.Add("Новый файл .docx")
-        listDocFiles.Add("Выбрать файл .docx")
+        listDocFiles.Add("Новый файл")
+        listDocFiles.Add("Выбрать файл...")
         Dim listOpenDoc As Dictionary(Of String, String) = MSWord.GetOpenWordDocuments()
         If listOpenDoc.Count > 0 Then
             For i As Integer = 0 To listOpenDoc.Count - 1
@@ -24,21 +24,6 @@ Public Class FormReportCatalogCoordinatesCadastralObject
             Next
         End If
         'поиск открытых документов Word
-        'Dim WApp As Microsoft.Office.Interop.Word.Application = Nothing
-        'Dim WDoc As Microsoft.Office.Interop.Word.Document = Nothing
-        'Dim countArrayDoc As Integer = 1
-        'Dim WordObj As Microsoft.Office.Interop.Word.Application = Nothing
-        'Try
-        '    WordObj = DirectCast(Marshal.GetActiveObject("Word.Application"), Microsoft.Office.Interop.Word.Application)
-        'Catch ex As COMException
-        'End Try
-        'If IsNothing(WordObj) = False Then
-        '    For i As Integer = 0 To WordObj.Windows.Count - 1
-        '        Dim WinObj As Microsoft.Office.Interop.Word.Window = WordObj.Windows(i + 1)
-        '        Dim nameFileDoc As String = WinObj.Document.Name
-        '        listDocFiles.Add(nameFileDoc)
-        '    Next
-        'End If
         CBox_SelectTemplate.DataSource = listDocFiles
         If listObject.Contains("Внутренний островок") Then
             listObject.Remove("Внутренний островок")

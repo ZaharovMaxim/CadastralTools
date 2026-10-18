@@ -1,6 +1,8 @@
 Imports System.IO
+Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Windows.Forms
+Imports Microsoft.Office.Interop
 Imports NetTopologySuite.Geometries
 
 'строка каталога координат
@@ -29,6 +31,8 @@ Public Class CatalogCoordinatesObject
     'handle'и исходных примитивов контура объекта (для экспорта в отдельный DWG)
     Public ListHandles As New List(Of String)
     Public Rows As New List(Of CatalogCoordinatesRow)
+    'JSON с ключевыми параметрами объекта (ConditionalNumber, ParentNameType и т.д.) — источник: StructureElement.KeyParameter
+    Public KeyParameter As String = ""
 End Class
 
 'формирование и вывод каталога координат характерных точек границ
@@ -67,7 +71,7 @@ Public Class CatalogCoordinates
         progressStart(listCatalog.Count, "Вывод каталога координат...")
         Try
             If boolCSV = True Then
-                exportCSV()
+                exportCSV(formCatalogCoordinates.CBox_SelectTemplate.Text)
             ElseIf boolExcel = True Then
                 If listCatalog.Count > 1 Then
                     exportExcel("Все участки в один файл")
@@ -99,7 +103,7 @@ Public Class CatalogCoordinates
                     MsgBox("Вывод таблицы в чертеж для данной платформы не подключен.")
                 End If
             ElseIf boolMapInfo = True Then
-                exportMapInfo()
+                exportMapInfo(formCatalogCoordinates.CBox_SelectTemplate.Text)
             End If
         Catch ex As Exception
             MsgBox("Ошибка при выводе каталога координат: " & ex.Message)
@@ -133,6 +137,9 @@ Public Class CatalogCoordinates
             If dictCounters.Count = 0 Then Continue For
             Dim objCatalog As New CatalogCoordinatesObject
             objCatalog.ConditionNumber = conditionalNumber.Trim
+            If IsNothing(dataStructures.KeyParameter) = False Then
+                objCatalog.KeyParameter = dataStructures.KeyParameter
+            End If
             objCatalog.ExtendedProperties = boolExtended
             objCatalog.PrecisionPosition = precisionPosition
             objCatalog.PrecisionArea = precisionArea
@@ -300,7 +307,7 @@ Public Class CatalogCoordinates
     'экспорт в CSV (межевой план)
     'перенесено максимально похоже на ExportCatalogCoordinatesParcels (SurvCivil2018(x64),
     'Territory_planning_project\CatalogExportCoordinates.vb, строки 2894-3030)
-    Private Sub exportCSV()
+    Private Sub exportCSV(ByVal typeCoord As String)
         Dim dialogFolder As New FolderBrowserDialog()
         dialogFolder.Description = "Выберите папку для сохранения каталогов координат"
         If dialogFolder.ShowDialog() <> DialogResult.OK Then
@@ -308,7 +315,6 @@ Public Class CatalogCoordinates
         End If
         Dim strFolder As String = dialogFolder.SelectedPath
         'в SurvCivil тип координат брался из FormReport.ComboBox1.Text
-        Dim typeCoord As String = "Уточняемые координаты"
         For Each objCatalog As CatalogCoordinatesObject In listCatalog
             progressStep("CSV: объект " & objCatalog.ConditionNumber)
             'имя файла — полный условный номер с заменой недопустимых символов
@@ -426,9 +432,9 @@ Public Class CatalogCoordinates
     'экспорт в MapInfo (*.mif, *.mid)
     'перенесено максимально похоже на ExportCatalogCoordinatesParcels (SurvCivil2018(x64),
     'Territory_planning_project\CatalogExportCoordinates.vb, строки 2204-2891)
-    'ветка "Согласно приказа 433/пр" не перенесена: она требует AutoCAD
-    '(ObjectId, Linetype, PropertySet) и относится к территориальному планированию
-    Private Sub exportMapInfo()
+    'ветка "Согласно приказа 433/пр" перенесена в режим "Для муниципальных ГИСОГД":
+    'тип линии (ent.Linetype) заменён на CBox_TypeObject.Text, property set (arrayData) — на KeyParameter объекта
+    Private Sub exportMapInfo(ByVal modeMapInfo As String)
         Dim dialogFolder As New FolderBrowserDialog()
         dialogFolder.Description = "Выберите папку для сохранения файлов MapInfo"
         If dialogFolder.ShowDialog() <> DialogResult.OK Then
@@ -437,10 +443,6 @@ Public Class CatalogCoordinates
         Dim strFolder As String = dialogFolder.SelectedPath
         Dim NameDir As String = strFolder
         'режим вывода (в SurvCivil брался из FormReport.ComboBox1.Text)
-        Dim modeMapInfo As String = "Каждый участок в свой файл"
-        If listCatalog.Count > 1 Then
-            modeMapInfo = "Все участки в один файл"
-        End If
         'границы координат по всем точкам каталога (в SurvCivil — глобальные MinCoord/MaxCoord)
         Dim MinCoordX As Double = 0
         Dim MinCoordY As Double = 0
@@ -470,8 +472,25 @@ Public Class CatalogCoordinates
                         ParcelMif1.WriteLine("Version 300")
                         ParcelMif1.WriteLine("Delimiter " & """" & ";" & """")
                         ParcelMif1.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                        'имена и количество полей берём из KeyParameter первого объекта с непустым JSON
+                        '(имя поля = ключ JSON, значение пишется в mid-файл); если KeyParameter
+                        'нет или он не валиден — остаётся одно поле ConditionalNumber, как раньше
+                        Dim listFields As List(Of KeyValuePair(Of String, String)) = Nothing
+                        For Each objFirst As CatalogCoordinatesObject In listCatalog
+                            listFields = parseKeyParameterFields(objFirst)
+                            If listFields.Count > 0 Then Exit For
+                        Next
+                        If IsNothing(listFields) = True Then
+                            listFields = New List(Of KeyValuePair(Of String, String))
+                        End If
+                        If listFields.Count = 0 Then
+                            listFields.Add(New KeyValuePair(Of String, String)("ConditionalNumber", ""))
+                        End If
+                        'Area/Lenght не берём из KeyParameter, иначе колонка продублируется:
+                        'эти поля ниже записываются вычисляемыми значениями
+                        removeComputedDuplicateFields(listFields, boolOutTotal And boolArea, boolOutTotal And boolLenght)
                         'подсчитываем число полей
-                        Dim numbField As Integer = 1
+                        Dim numbField As Integer = listFields.Count
                         If boolOutTotal = True And boolArea = True Then
                             numbField += 1
                         End If
@@ -481,7 +500,9 @@ Public Class CatalogCoordinates
                         'записываем количество полей
                         ParcelMif1.WriteLine("Columns " & numbField)
                         'записываем поля
-                        ParcelMif1.WriteLine("   ConditionalNumber Char(256)")
+                        For Each fieldItem As KeyValuePair(Of String, String) In listFields
+                            ParcelMif1.WriteLine("   " & fieldItem.Key & " Char(256)")
+                        Next
                         If boolOutTotal = True And boolArea = True Then
                             ParcelMif1.WriteLine("   Area Decimal(8,2)")
                         End If
@@ -492,14 +513,34 @@ Public Class CatalogCoordinates
                         ParcelMif1.WriteLine(" ")
                         For Each objCatalog As CatalogCoordinatesObject In listCatalog
                             progressStep("MapInfo: объект " & objCatalog.ConditionNumber)
+
                             'геометрия объекта (REGION/PLINE + оформление)
                             writeGeometryMif(ParcelMif1, objCatalog)
                             'записываем mid файл
                             Dim StrMid As String = ""
-                            Dim nameObject As String = objCatalog.ConditionNumber
-                            If IsNothing(nameObject) = True Then nameObject = " "
-                            If nameObject.Trim.Length = 0 Then nameObject = " "
-                            StrMid = nameObject
+                            'значения полей объекта из KeyParameter (подбор по имени поля)
+                            Dim dictFieldValues As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+                            For Each fieldItem As KeyValuePair(Of String, String) In parseKeyParameterFields(objCatalog)
+                                dictFieldValues(fieldItem.Key) = fieldItem.Value
+                            Next
+                            For Each fieldItem As KeyValuePair(Of String, String) In listFields
+                                Dim valField As String = ""
+                                If dictFieldValues.ContainsKey(fieldItem.Key) = True Then
+                                    valField = dictFieldValues(fieldItem.Key)
+                                End If
+                                If IsNothing(valField) = True Then valField = ""
+                                'страховка: условный номер всегда берём из модели объекта
+                                If valField.Length = 0 Then
+                                    If fieldItem.Key Like "ConditionalNumber" Then
+                                        valField = objCatalog.ConditionNumber
+                                    End If
+                                End If
+                                If StrMid.Length = 0 Then
+                                    StrMid = valField
+                                Else
+                                    StrMid = StrMid & ";" & valField
+                                End If
+                            Next
                             If boolOutTotal = True And boolArea = True Then
                                 Dim valArea As String = "0"
                                 If objCatalog.IsRegion = True Then
@@ -518,6 +559,180 @@ Public Class CatalogCoordinates
                         Next
                     End Using
                 End Using
+            Catch ex As Exception
+            End Try
+        ElseIf modeMapInfo Like "Для муниципальных ГИСОГД" Then
+            '==================================================================================
+            'ветка "Согласно приказа 433/пр" SurvCivil, перенесена с максимальным подобием;
+            'nameTypeLine = formCatalogCoordinates.CBox_TypeObject.Text (значение хранится в deskCadastralObject),
+            'значения полей объекта читаются из KeyParameter (аналог property set arrayData эталона)
+            Try
+                Dim nameTypeLine As String = deskCadastralObject
+                If IsNothing(nameTypeLine) = True Then nameTypeLine = ""
+                Dim ParcelMif1 As StreamWriter = Nothing
+                Dim ParcelMid1 As StreamWriter = Nothing
+                'аналог "If j = 0" эталона: файлы и заголовок создаются однократно, по типу объекта
+                If nameTypeLine Like "Граница территории в отношении которой осуществляется подготовка проекта планировки" Then
+                    ParcelMif1 = New StreamWriter(strFolder & "\" & "gr_dpt" & ".mif", False, System.Text.Encoding.Default)
+                    ParcelMid1 = New StreamWriter(strFolder & "\" & "gr_dpt" & ".mid", False, System.Text.Encoding.Default)
+                    'заполняем заголовок таблицы mif
+                    ParcelMif1.WriteLine("Version 300")
+                    ParcelMif1.WriteLine("Delimiter " & """" & ";" & """")
+                    ParcelMif1.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                    ParcelMif1.WriteLine("Columns 1")
+                    ParcelMif1.WriteLine("  GLOBALID Char(50)")
+                    ParcelMif1.WriteLine("Data")
+                ElseIf nameTypeLine Like "Граница зоны планируемого размещения линейных объектов (постоянный отвод)" Or nameTypeLine Like "Граница зоны планируемого размещения линейных объектов (временный отвод)" Or nameTypeLine Like "Граница зоны планируемого размещения линейных объектов, подлежащих реконструкции в связи с изменением их местоположения" Then
+                    ParcelMif1 = New StreamWriter(strFolder & "\" & "ConstructionZonesBorders" & ".mif", False, System.Text.Encoding.Default)
+                    ParcelMid1 = New StreamWriter(strFolder & "\" & "ConstructionZonesBorders" & ".mid", False, System.Text.Encoding.Default)
+                    'заполняем заголовок таблицы mif
+                    ParcelMif1.WriteLine("Version 300")
+                    ParcelMif1.WriteLine("Delimiter " & """" & ";" & """")
+                    ParcelMif1.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                    ParcelMif1.WriteLine("Columns 5")
+                    ParcelMif1.WriteLine("  GLOBALID Char(50)")
+                    ParcelMif1.WriteLine("  Name Char(256)")
+                    ParcelMif1.WriteLine("  Area Decimal(8,0)")
+                    ParcelMif1.WriteLine("  BuiltUpArea Decimal(15,2)")
+                    ParcelMif1.WriteLine("  ResidentsNum Integer")
+                    ParcelMif1.WriteLine("Data")
+                ElseIf nameTypeLine Like "Красные линии действующие" Or nameTypeLine Like "Красные линии устанавливаемые" Or nameTypeLine Like "Красные линии отменяемые" Then
+                    ParcelMif1 = New StreamWriter(strFolder & "\" & "RedLine" & ".mif", False, System.Text.Encoding.Default)
+                    ParcelMid1 = New StreamWriter(strFolder & "\" & "RedLine" & ".mid", False, System.Text.Encoding.Default)
+                    'заполняем заголовок таблицы mif
+                    ParcelMif1.WriteLine("Version 300")
+                    ParcelMif1.WriteLine("Delimiter " & """" & ";" & """")
+                    ParcelMif1.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                    ParcelMif1.WriteLine("Columns 3")
+                    ParcelMif1.WriteLine("  GLOBALID Char(50)")
+                    ParcelMif1.WriteLine("  Number Char(256)")
+                    ParcelMif1.WriteLine("  Status Char(256)")
+                    ParcelMif1.WriteLine("Data")
+                ElseIf nameTypeLine Like "Земельный участок образуемый" Then
+                    ParcelMif1 = New StreamWriter(strFolder & "\" & "FormedLand" & ".mif", False, System.Text.Encoding.Default)
+                    ParcelMid1 = New StreamWriter(strFolder & "\" & "FormedLand" & ".mid", False, System.Text.Encoding.Default)
+                    'заполняем заголовок таблицы mif
+                    ParcelMif1.WriteLine("Version 300")
+                    ParcelMif1.WriteLine("Delimiter " & """" & ";" & """")
+                    ParcelMif1.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                    ParcelMif1.WriteLine("Columns 9")
+                    ParcelMif1.WriteLine("  GLOBALID Char(50)")
+                    ParcelMif1.WriteLine("  Class Char(256)")
+                    ParcelMif1.WriteLine("  Status Char(256)")
+                    ParcelMif1.WriteLine("  FormingType Char(256)")
+                    ParcelMif1.WriteLine("  NominalNum Char(256)")
+                    ParcelMif1.WriteLine("  Location Char(256)")
+                    ParcelMif1.WriteLine("  PermittedUseType Char(256)")
+                    ParcelMif1.WriteLine("  Area Decimal(8,0)")
+                    ParcelMif1.WriteLine("  Easement Char(256)")
+                    ParcelMif1.WriteLine("Data")
+                ElseIf nameTypeLine Like "Публичный сервитут образуемый" Or nameTypeLine Like "Сервитут образуемый" Then
+                    ParcelMif1 = New StreamWriter(strFolder & "\" & "Easement" & ".mif", False, System.Text.Encoding.Default)
+                    ParcelMid1 = New StreamWriter(strFolder & "\" & "Easement" & ".mid", False, System.Text.Encoding.Default)
+                    'заполняем заголовок таблицы mif
+                    ParcelMif1.WriteLine("Version 300")
+                    ParcelMif1.WriteLine("Delimiter " & """" & ";" & """")
+                    ParcelMif1.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                    ParcelMif1.WriteLine("Columns 7")
+                    ParcelMif1.WriteLine("  GLOBALID Char(50)")
+                    ParcelMif1.WriteLine("  EasementType Char(256)")
+                    ParcelMif1.WriteLine("  Status Char(256)")
+                    ParcelMif1.WriteLine("  Area Decimal(8,0)")
+                    ParcelMif1.WriteLine("  PublicEasementType Char(256)")
+                    ParcelMif1.WriteLine("  Purpose Char(256)")
+                    ParcelMif1.WriteLine("  EGRNNum Char(256)")
+                    ParcelMif1.WriteLine("Data")
+                End If
+                If IsNothing(ParcelMif1) = True Or IsNothing(ParcelMid1) = True Then
+                    MsgBox("Для муниципальных ГИСОГД: тип объекта """ & nameTypeLine & """ не поддерживается.")
+                Else
+                    Using ParcelMif1
+                        Using ParcelMid1
+                            ParcelMif1.WriteLine(" ")
+                            For Each objCatalog As CatalogCoordinatesObject In listCatalog
+                                progressStep("MapInfo: объект " & objCatalog.ConditionNumber)
+                                'геометрия объекта (REGION/PLINE + оформление), аналог цикла по ArrayKoordinate
+                                writeGeometryMifGosgid(ParcelMif1, objCatalog)
+                                '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+                                'записываем mid файл
+                                Dim objectGUID As Guid = Guid.NewGuid()
+                                Dim StrMid As String = ""
+                                If nameTypeLine Like "Граница территории в отношении которой осуществляется подготовка проекта планировки" Then
+                                    StrMid = objectGUID.ToString
+                                ElseIf nameTypeLine Like "Граница зоны планируемого размещения линейных объектов (постоянный отвод)" Or nameTypeLine Like "Граница зоны планируемого размещения линейных объектов (временный отвод)" Or nameTypeLine Like "Граница зоны планируемого размещения линейных объектов, подлежащих реконструкции в связи с изменением их местоположения" Then
+                                    Dim name As String = getValueKeyParameter(objCatalog, "Type_line")
+                                    StrMid = objectGUID.ToString & ";" & name & ";" & objCatalog.TotalArea & ";;"
+                                ElseIf nameTypeLine Like "Красные линии действующие" Or nameTypeLine Like "Красные линии устанавливаемые" Or nameTypeLine Like "Красные линии отменяемые" Then
+                                    Dim numbRedLine As String = getValueKeyParameter(objCatalog, "ConditionalNumber")
+                                    Dim status As String = ""
+                                    If nameTypeLine Like "A-Красные линии действующие" Then
+                                        status = "7Е.1"
+                                    ElseIf nameTypeLine Like "A-Красные линии устанавливаемые" Then
+                                        status = "7Е.2"
+                                    ElseIf nameTypeLine Like "A-Красные линии отменяемые" Then
+                                        status = "7Е.3"
+                                    End If
+                                    StrMid = objectGUID.ToString & ";" & numbRedLine & ";" & status
+                                ElseIf nameTypeLine Like "Земельный участок образуемый" Then
+                                    Dim conditionalNumber As String = getValueKeyParameter(objCatalog, "ConditionalNumber")
+                                    Dim Cad_number As String = getValueKeyParameter(objCatalog, "CadlNumber")
+                                    Dim adress As String = getValueKeyParameter(objCatalog, "Adress")
+                                    Dim category As String = getValueKeyParameter(objCatalog, "Category")
+                                    Dim utilization As String = getValueKeyParameter(objCatalog, "Utilization")
+                                    Dim metodCreate As String = getValueKeyParameter(objCatalog, "Method_create")
+                                    Dim sposobObr As String = getValueKeyParameter(objCatalog, "Confiscation")
+                                    If metodCreate.IndexOf("осударствен") > -1 Then
+                                        metodCreate = "7G.1"
+                                    ElseIf metodCreate.IndexOf("раздел") > -1 Then
+                                        metodCreate = "7G.2"
+                                    ElseIf metodCreate.IndexOf("объединен") > -1 Then
+                                        metodCreate = "7G.3"
+                                    ElseIf metodCreate.IndexOf("Выдел") > -1 Or metodCreate.IndexOf("выдел") > -1 Then
+                                        metodCreate = "7G.4"
+                                    ElseIf metodCreate.IndexOf("ерераспределен") > -1 Then
+                                        metodCreate = "7G.5"
+                                    Else
+                                        metodCreate = ""
+                                    End If
+                                    If sposobObr.IndexOf("зъят") > -1 Then
+                                        If metodCreate Like "7G.1" Then
+                                            sposobObr = "7F.2"
+                                        Else
+                                            If category.IndexOf("насел") > -1 Then
+                                                sposobObr = "7F.6"
+                                            Else
+                                                sposobObr = "7F.7"
+                                            End If
+                                        End If
+                                    ElseIf sposobObr.IndexOf("езервиров") > -1 Then
+                                        If category.IndexOf("насел") > -1 Then
+                                            sposobObr = "7F.6"
+                                        Else
+                                            sposobObr = "7F.4"
+                                        End If
+                                    ElseIf sposobObr.IndexOf("Измен") > -1 Or sposobObr.IndexOf("измен") > -1 Then
+                                        sposobObr = "7F.3"
+                                    ElseIf sposobObr.Trim.Length = 0 Then
+                                        sposobObr = "7F.1"
+                                    End If
+                                    StrMid = objectGUID.ToString & ";" & sposobObr & ";7В.2;" & metodCreate & ";" & conditionalNumber & ";" & adress & ";" & utilization & ";" & objCatalog.TotalArea & ";"
+                                ElseIf nameTypeLine Like "Публичный сервитут образуемый" Or nameTypeLine Like "Сервитут образуемый" Then
+                                    Dim purpose As String = getValueKeyParameter(objCatalog, "Purpose")
+                                    Dim typeServ As String = ""
+                                    If nameTypeLine Like "Сервитут образуемый" Then
+                                        typeServ = "13A.2"
+                                    Else
+                                        typeServ = "13A.1"
+                                    End If
+                                    StrMid = objectGUID.ToString & ";" & typeServ & ";13B.1;" & objCatalog.TotalArea & ";" & "13C.3" & ";" & purpose & ";"
+                                End If
+                                Dim newString As String = StrMid.Replace(vbCrLf, "").Replace(vbLf, "")
+                                ParcelMid1.WriteLine(newString)
+                                StrMid = ""
+                            Next
+                        End Using
+                    End Using
+                End If
             Catch ex As Exception
             End Try
         Else
@@ -553,8 +768,18 @@ Public Class CatalogCoordinates
                             ParcelMif.WriteLine("Version 300")
                             ParcelMif.WriteLine("Delimiter " & """" & "," & """")
                             ParcelMif.WriteLine("CoordSys NonEarth Units " & """" & "m" & """" & " Bounds(" & Math.Round(MinCoordX, 0) - 10 & ", " & Math.Round(MinCoordY, 0) - 10 & ")(" & Math.Round(MaxCoordX, 0) + 10 & ", " & Math.Round(MaxCoordY, 0) + 10 & ")")
+                            'имена и количество полей берём из KeyParameter объекта
+                            '(имя поля = ключ JSON, значение пишется в mid-файл); если KeyParameter
+                            'нет или он не валиден — остаётся одно поле ConditionalNumber, как раньше
+                            Dim listFields As List(Of KeyValuePair(Of String, String)) = parseKeyParameterFields(objCatalog)
+                            If listFields.Count = 0 Then
+                                listFields.Add(New KeyValuePair(Of String, String)("ConditionalNumber", ""))
+                            End If
+                            'Area/Lenght не берём из KeyParameter, иначе колонка продублируется:
+                            'эти поля ниже записываются вычисляемыми значениями
+                            removeComputedDuplicateFields(listFields, boolOutTotal And boolArea, boolOutTotal And boolLenght)
                             'подсчитываем число полей
-                            Dim numbField As Integer = 1
+                            Dim numbField As Integer = listFields.Count
                             If boolOutTotal = True And boolArea = True Then
                                 numbField += 1
                             End If
@@ -563,7 +788,9 @@ Public Class CatalogCoordinates
                             End If
                             ParcelMif.WriteLine("Columns " & numbField)
                             'записываем поля
-                            ParcelMif.WriteLine("   ConditionalNumber Char(256)")
+                            For Each fieldItem As KeyValuePair(Of String, String) In listFields
+                                ParcelMif.WriteLine("   " & fieldItem.Key & " Char(256)")
+                            Next
                             If boolOutTotal = True And boolArea = True Then
                                 ParcelMif.WriteLine("   Area Decimal(8,2)")
                             End If
@@ -576,9 +803,29 @@ Public Class CatalogCoordinates
                             writeGeometryMif(ParcelMif, objCatalog)
                             'записываем mid файл (значения в кавычках, как в эталоне)
                             Dim StrMid As String = ""
-                            Dim nameObject As String = objCatalog.ConditionNumber
-                            If IsNothing(nameObject) = True Then nameObject = ""
-                            StrMid = Chr(34) & nameObject & Chr(34)
+                            'значения полей объекта из KeyParameter (подбор по имени поля)
+                            Dim dictFieldValues As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+                            For Each fieldItem As KeyValuePair(Of String, String) In parseKeyParameterFields(objCatalog)
+                                dictFieldValues(fieldItem.Key) = fieldItem.Value
+                            Next
+                            For Each fieldItem As KeyValuePair(Of String, String) In listFields
+                                Dim valField As String = ""
+                                If dictFieldValues.ContainsKey(fieldItem.Key) = True Then
+                                    valField = dictFieldValues(fieldItem.Key)
+                                End If
+                                If IsNothing(valField) = True Then valField = ""
+                                'страховка: условный номер всегда берём из модели объекта
+                                If valField.Length = 0 Then
+                                    If fieldItem.Key Like "ConditionalNumber" Then
+                                        valField = objCatalog.ConditionNumber
+                                    End If
+                                End If
+                                If StrMid.Length = 0 Then
+                                    StrMid = Chr(34) & valField & Chr(34)
+                                Else
+                                    StrMid = StrMid & "," & Chr(34) & valField & Chr(34)
+                                End If
+                            Next
                             If boolOutTotal = True And boolArea = True Then
                                 Dim valArea As String = "0"
                                 If objCatalog.IsRegion = True Then
@@ -600,6 +847,122 @@ Public Class CatalogCoordinates
                 End Try
             Next
         End If
+    End Sub
+    '===============================================================================================================================
+    'чтение значения поля объекта из KeyParameter (аналог FuncFindValueToArray2d(arrayData, nameField, 1, 2)
+    'для property set в эталоне SurvCivil: имя поля = ключ JSON)
+    Private Function getValueKeyParameter(ByVal objCatalog As CatalogCoordinatesObject, ByVal nameField As String) As String
+        Dim result As String = ""
+        If IsNothing(objCatalog) = True Then Return result
+        If IsNothing(nameField) = True Then Return result
+        Try
+            Dim valueField As Object = JsonValidator.GetValueFromJson(objCatalog.KeyParameter, nameField)
+            If IsNothing(valueField) = False Then
+                result = valueField.ToString()
+            End If
+        Catch ex As Exception
+        End Try
+        If IsNothing(result) = True Then result = ""
+        Return result
+    End Function
+    '===============================================================================================================================
+    'запись геометрии объекта в mif-файл для муниципальных ГИСОГД
+    '(перенесено с максимальным подобием из SurvCivil: REGION / PLINE MULTIPLE / PLINE + Pen/Brush)
+    Private Sub writeGeometryMifGosgid(ByVal writerMif As StreamWriter, ByVal objCatalog As CatalogCoordinatesObject)
+        If IsNothing(writerMif) = True Then Exit Sub
+        If IsNothing(objCatalog) = True Then Exit Sub
+        'сбор колец объекта (аналог цикла по ArrayKoordinate)
+        Dim listRings As New List(Of List(Of CatalogCoordinatesRow))
+        Dim ringCurrent As List(Of CatalogCoordinatesRow) = Nothing
+        For Each rowPoint As CatalogCoordinatesRow In objCatalog.Rows
+            If rowPoint.kindRow = 1 Or rowPoint.kindRow = -1 Then
+                ringCurrent = New List(Of CatalogCoordinatesRow)
+                listRings.Add(ringCurrent)
+            ElseIf rowPoint.kindRow = 0 Then
+                If IsNothing(ringCurrent) = True Then
+                    ringCurrent = New List(Of CatalogCoordinatesRow)
+                    listRings.Add(ringCurrent)
+                End If
+                ringCurrent.Add(rowPoint)
+            End If
+        Next
+        'отбрасываем пустые кольца
+        Dim listRingsValid As New List(Of List(Of CatalogCoordinatesRow))
+        For Each ringItem As List(Of CatalogCoordinatesRow) In listRings
+            If IsNothing(ringItem) = False Then
+                If ringItem.Count > 0 Then
+                    listRingsValid.Add(ringItem)
+                End If
+            End If
+        Next
+        If listRingsValid.Count = 0 Then Exit Sub
+        Dim RoundZn As Integer = precisionPosition
+        If objCatalog.IsRegion = True Then
+            'REGION <число полилиний (колец)>
+            writerMif.WriteLine("REGION " & listRingsValid.Count)
+            For Each ringItem As List(Of CatalogCoordinatesRow) In listRingsValid
+                writerMif.WriteLine(" " & ringItem.Count)
+                For Each rowPoint As CatalogCoordinatesRow In ringItem
+                    writerMif.WriteLine(Math.Round(rowPoint.X, RoundZn) & " " & Math.Round(rowPoint.Y, RoundZn))
+                Next
+            Next
+            writerMif.WriteLine("Pen(12, 2, 16711680)")
+            writerMif.WriteLine("BRUSH(2,16777215)")
+        ElseIf listRingsValid.Count > 1 Then
+            'PLINE MULTIPLE <число полилиний>
+            writerMif.WriteLine("PLINE MULTIPLE " & listRingsValid.Count)
+            For Each ringItem As List(Of CatalogCoordinatesRow) In listRingsValid
+                writerMif.WriteLine(" " & ringItem.Count)
+                For Each rowPoint As CatalogCoordinatesRow In ringItem
+                    writerMif.WriteLine(Math.Round(rowPoint.X, RoundZn) & " " & Math.Round(rowPoint.Y, RoundZn))
+                Next
+            Next
+            writerMif.WriteLine("Pen(12, 2, 16711680)")
+        Else
+            'PLINE <число точек>
+            Dim ringSingle As List(Of CatalogCoordinatesRow) = listRingsValid(0)
+            writerMif.WriteLine("PLINE " & ringSingle.Count)
+            For Each rowPoint As CatalogCoordinatesRow In ringSingle
+                writerMif.WriteLine(Math.Round(rowPoint.X, RoundZn) & " " & Math.Round(rowPoint.Y, RoundZn))
+            Next
+            writerMif.WriteLine("Pen(12, 2, 16711680)")
+        End If
+    End Sub
+    '===============================================================================================================================
+    'парсинг KeyParameter (плоский JSON "ключ":"значение") в список пар имя/значение поля.
+    'Имя поля MapInfo = ключ JSON, значение для mid-файла = значение JSON.
+    'Пустой/невалидный JSON даёт пустой список.
+    Private Function parseKeyParameterFields(ByVal objCatalog As CatalogCoordinatesObject) As List(Of KeyValuePair(Of String, String))
+        Dim result As New List(Of KeyValuePair(Of String, String))
+        If IsNothing(objCatalog) = True Then Return result
+        Dim dictKeyParam As Dictionary(Of String, Object) = JsonValidator.DeserializeJsonToDictionary(objCatalog.KeyParameter)
+        For Each kvp As KeyValuePair(Of String, Object) In dictKeyParam
+            Dim nameField As String = kvp.Key
+            If IsNothing(nameField) = True Then Continue For
+            If nameField.Trim.Length = 0 Then Continue For
+            Dim valueField As String = ""
+            If IsNothing(kvp.Value) = False Then
+                valueField = kvp.Value.ToString()
+            End If
+            If IsNothing(valueField) = True Then valueField = ""
+            result.Add(New KeyValuePair(Of String, String)(nameField.Trim, valueField))
+        Next
+        Return result
+    End Function
+    '===============================================================================================================================
+    'исключает из списка полей ключи Area/Lenght, если эти колонки всё равно будут
+    'записаны вычисляемыми значениями (иначе поле продублируется в mif-таблице)
+    Private Sub removeComputedDuplicateFields(ByVal listFields As List(Of KeyValuePair(Of String, String)), ByVal skipArea As Boolean, ByVal skipLenght As Boolean)
+        If IsNothing(listFields) = True Then Exit Sub
+        For i As Integer = listFields.Count - 1 To 0 Step -1
+            Dim keyField As String = listFields(i).Key
+            If IsNothing(keyField) = True Then Continue For
+            If skipArea = True And String.Compare(keyField, "Area", StringComparison.OrdinalIgnoreCase) = 0 Then
+                listFields.RemoveAt(i)
+            ElseIf skipLenght = True And String.Compare(keyField, "Lenght", StringComparison.OrdinalIgnoreCase) = 0 Then
+                listFields.RemoveAt(i)
+            End If
+        Next
     End Sub
     '===============================================================================================================================
     'запись геометрии объекта в mif-файл (REGION с кольцами или PLINE + оформление)
@@ -1191,13 +1554,13 @@ Public Class CatalogCoordinates
         Dim WApp As Microsoft.Office.Interop.Word.Application = Nothing
         Dim WDoc As Microsoft.Office.Interop.Word.Document = Nothing
         Dim insertPos As Integer = 0
+        Dim updateData As Boolean = False
         Try
-            If selectTemplate Like "Новый файл .docx" Then
+            If selectTemplate Like "Новый файл" Then
                 WApp = DirectCast(CreateObject("Word.Application"), Microsoft.Office.Interop.Word.Application)
                 WDoc = WApp.Documents.Add()
-                WApp.Visible = True
                 insertPos = WDoc.Content.End - 1
-            ElseIf selectTemplate Like "Выбрать файл...." Then
+            ElseIf selectTemplate Like "Выбрать файл..." Then
                 Dim dialogFile As New OpenFileDialog()
                 dialogFile.Filter = "Документ Word (*.docx)|*.docx|Все файлы (*.*)|*.*"
                 If dialogFile.ShowDialog() <> DialogResult.OK Then
@@ -1205,141 +1568,187 @@ Public Class CatalogCoordinates
                 End If
                 WApp = DirectCast(CreateObject("Word.Application"), Microsoft.Office.Interop.Word.Application)
                 WDoc = WApp.Documents.Open(dialogFile.FileName)
-                WApp.Visible = True
                 insertPos = WDoc.Content.End - 1
+                updateData = True
             Else
-                WApp = DirectCast(GetObject(, "Word.Application"), Microsoft.Office.Interop.Word.Application)
-                If IsNothing(WApp) = True Then
-                    MsgBox("Не удалось подключиться к MS Word.")
-                    Exit Sub
-                End If
-                For i As Integer = 1 To WApp.Documents.Count
-                    If WApp.Documents(i).Name Like selectTemplate Then
-                        WDoc = WApp.Documents(i)
-                        Exit For
-                    End If
-                Next i
-                If IsNothing(WDoc) = True Then
-                    MsgBox("Документ """ & selectTemplate & """ не найден среди открытых.")
-                    Exit Sub
-                End If
-                insertPos = WApp.Selection.End - 1
-            End If
-            WApp.ScreenUpdating = False
-            For Each objCatalog As CatalogCoordinatesObject In listCatalog
-                progressStep("Word: объект " & objCatalog.ConditionNumber)
-                insertPos = WDoc.Content.End - 1
-                Dim range As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
-                range.Font.Name = "Times New Roman"
-                Dim range2 As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
-                range2.Font.Size = 12
-                Dim rng As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
-                rng.Paragraphs.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter
-                Dim conditionalParcel As String = objCatalog.ConditionNumber
-                Dim numberParcel As Integer = 1
-                If Integer.TryParse(conditionalParcel.ToString, numberParcel) = False Then
-                    numberParcel = DataFormatting.GetNumberBeforeParenthesis(conditionalParcel)
-                End If
-                Dim text1 As String = "Условный номер (обозначение): " & numberParcel.ToString
-                rng.InsertAfter(text1)
-                insertPos = WDoc.Content.End - 1
-                Dim range5 As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
-                range5.Paragraphs.Add()
-                Dim countColumns As Integer = 3
-                If objCatalog.ExtendedProperties = True Then
-                    countColumns = 6
-                End If
-                Dim countRows As Integer = objCatalog.Rows.Count + 2
-                If boolOutTotal = True Then
-                    countRows = countRows + 1
-                End If
-                Dim WDocTbl As Microsoft.Office.Interop.Word.Table = WDoc.Tables.Add(range5, countRows, countColumns, Microsoft.Office.Interop.Word.WdDefaultTableBehavior.wdWord9TableBehavior, Microsoft.Office.Interop.Word.WdAutoFitBehavior.wdAutoFitFixed)
-                Try
-                    WDocTbl.Style = "Сетка таблицы"
-                Catch exStyle As Exception
-                End Try
-                WDocTbl.ApplyStyleRowBands = True
-                'форматирование таблицы блоками до заполнения ячеек
-                WDocTbl.Range.Font.Name = "Times New Roman"
-                WDocTbl.Range.Select()
-                WApp.Selection.Paragraphs.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter
-                WApp.Selection.Cells.VerticalAlignment = Microsoft.Office.Interop.Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter
-                WDocTbl.Rows(1).Range.Bold = -1
-                WDocTbl.Rows(2).Range.Bold = -1
-                'делаем шапку таблицы (строки будут повторяться на каждой странице)
-                WDocTbl.Rows(1).HeadingFormat = True
-                WDocTbl.Rows(2).HeadingFormat = True
-                WDocTbl.Cell(1, 1).Merge(WDocTbl.Cell(2, 1))
-                WDocTbl.Cell(1, 1).Range.Text = "Обозначение" & vbLf & "характерных" & vbLf & "точек границ"
-                WDocTbl.Cell(1, 2).Merge(WDocTbl.Cell(1, 3))
-                WDocTbl.Cell(1, 2).Range.Text = "Координаты, м"
-                WDocTbl.Cell(2, 2).Range.Text = "X"
-                WDocTbl.Cell(2, 3).Range.Text = "Y"
-                If objCatalog.ExtendedProperties = True And WDocTbl.Columns.Count = 6 Then
-                    WDocTbl.Cell(1, 3).Merge(WDocTbl.Cell(2, 4))
-                    WDocTbl.Cell(1, 3).Range.Text = "Метод определения координат"
-                    WDocTbl.Cell(1, 4).Merge(WDocTbl.Cell(2, 5))
-                    WDocTbl.Cell(1, 4).Range.Text = "Средняя квадратическая погрешность положения характерных точек (Mt), м"
-                    WDocTbl.Cell(1, 5).Merge(WDocTbl.Cell(2, 6))
-                    WDocTbl.Cell(1, 5).Range.Text = "Описание обозначения точки на местности (при наличии)"
-                End If
-                Dim count2 As Integer = 3
-                For Each row As CatalogCoordinatesRow In objCatalog.Rows
-                    If row.kindRow = 1 Then
-                        WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
-                        WDocTbl.Cell(count2, 1).Range.Text = row.Number
-                    ElseIf row.kindRow = -1 Then
-                        WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
-                        WDocTbl.Cell(count2, 1).Range.Text = ""
-                    Else
-                        WDocTbl.Cell(count2, 1).Range.Text = row.Number
-                        WDocTbl.Cell(count2, 2).Range.Text = formatCoord(row.X)
-                        WDocTbl.Cell(count2, 3).Range.Text = formatCoord(row.Y)
-                        If objCatalog.ExtendedProperties = True Then
-                            Dim metod As String = row.Method
-                            If IsNothing(metod) = True Then
-                                metod = "-"
-                            End If
-                            If metod.Trim.Length = 0 Then
-                                metod = "-"
-                            End If
-                            WDocTbl.Cell(count2, 4).Range.Text = metod
-                            Dim deltaYX As String = row.Delta
-                            If IsNothing(deltaYX) = True Then
-                                deltaYX = "0"
-                            End If
-                            Dim di As Double = Val(deltaYX)
-                            If di = 0 Then
-                                di = 0.1
-                            End If
-                            WDocTbl.Cell(count2, 5).Range.Text = formatCoord(di)
-                            Dim deskPoint As String = row.FastDesk
-                            If IsNothing(deskPoint) = True Then
-                                deskPoint = ""
-                            End If
-                            WDocTbl.Cell(count2, 6).Range.Text = deskPoint
+                Dim listOpenDoc As Dictionary(Of String, String) = MSWord.GetOpenWordDocuments()
+                If listOpenDoc.Count > 0 Then
+                    For i As Integer = 0 To listOpenDoc.Count - 1
+                        If listOpenDoc.ElementAt(i).Key Like selectTemplate Then
+                            Try
+                                Dim putchDoc As String = listOpenDoc.ElementAt(i).Value
+                                WApp = DirectCast(GetObject(, "Word.Application"), Microsoft.Office.Interop.Word.Application)
+                                WDoc = TryCast(Marshal.BindToMoniker(putchDoc), Word.Document)
+                                insertPos = WApp.Selection.End - 1
+                                updateData = True
+                            Catch ex As COMException
+                            End Try
                         End If
-                    End If
-                    count2 = count2 + 1
-                Next
-                If boolOutTotal = True Then
-                    WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
-                    WDocTbl.Cell(count2, 1).Range.Text = totalCatalog(objCatalog)
+                    Next
                 End If
-                Try
-                    WDocTbl.Title = "Каталог координат"
-                    Dim deskStr As String = "ObjectNumber=" & objCatalog.ConditionNumber & "; DescObject=" & deskCadastralObject
-                    WDocTbl.Descr = deskStr
-                Catch ex2 As Exception
-                End Try
-                WDocTbl.AutoFitBehavior(Microsoft.Office.Interop.Word.WdAutoFitBehavior.wdAutoFitContent)
-                WDocTbl.Rows.Alignment = Microsoft.Office.Interop.Word.WdRowAlignment.wdAlignRowCenter
-                insertPos = WDocTbl.Range.End
-                Dim range6 As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
-                rng = range6
-                rng.Paragraphs.Add()
-            Next
-            WApp.Visible = True
+            End If
+            If IsNothing(WDoc) = False Then
+                If updateData = False Then
+                    WApp.ScreenUpdating = False
+                    For Each objCatalog As CatalogCoordinatesObject In listCatalog
+                        progressStep("Word: объект " & objCatalog.ConditionNumber)
+                        insertPos = WDoc.Content.End - 1
+                        Dim range As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
+                        range.Font.Name = "Times New Roman"
+                        Dim range2 As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
+                        range2.Font.Size = 12
+                        Dim rng As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
+                        rng.Paragraphs.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter
+                        Dim conditionalParcel As String = objCatalog.ConditionNumber
+                        Dim numberParcel As Integer = 1
+                        If Integer.TryParse(conditionalParcel.ToString, numberParcel) = False Then
+                            numberParcel = DataFormatting.GetNumberBeforeParenthesis(conditionalParcel)
+                        End If
+                        Dim text1 As String = "Условный номер (обозначение): " & numberParcel.ToString
+                        rng.InsertAfter(text1)
+                        insertPos = WDoc.Content.End - 1
+                        Dim range5 As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
+                        range5.Paragraphs.Add()
+                        Dim countColumns As Integer = 3
+                        If objCatalog.ExtendedProperties = True Then
+                            countColumns = 6
+                        End If
+                        Dim countRows As Integer = objCatalog.Rows.Count + 2
+                        If boolOutTotal = True Then
+                            countRows = countRows + 1
+                        End If
+                        Dim WDocTbl As Microsoft.Office.Interop.Word.Table = WDoc.Tables.Add(range5, countRows, countColumns, Microsoft.Office.Interop.Word.WdDefaultTableBehavior.wdWord9TableBehavior, Microsoft.Office.Interop.Word.WdAutoFitBehavior.wdAutoFitFixed)
+                        Try
+                            WDocTbl.Style = "Сетка таблицы"
+                        Catch exStyle As Exception
+                        End Try
+                        WDocTbl.ApplyStyleRowBands = True
+                        'форматирование таблицы блоками до заполнения ячеек
+                        WDocTbl.Range.Font.Name = "Times New Roman"
+                        WDocTbl.Range.Select()
+                        WApp.Selection.Paragraphs.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter
+                        WApp.Selection.Cells.VerticalAlignment = Microsoft.Office.Interop.Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter
+                        WDocTbl.Rows(1).Range.Bold = -1
+                        WDocTbl.Rows(2).Range.Bold = -1
+                        'делаем шапку таблицы (строки будут повторяться на каждой странице)
+                        WDocTbl.Rows(1).HeadingFormat = True
+                        WDocTbl.Rows(2).HeadingFormat = True
+                        WDocTbl.Cell(1, 1).Merge(WDocTbl.Cell(2, 1))
+                        WDocTbl.Cell(1, 1).Range.Text = "Обозначение" & vbLf & "характерных" & vbLf & "точек границ"
+                        WDocTbl.Cell(1, 2).Merge(WDocTbl.Cell(1, 3))
+                        WDocTbl.Cell(1, 2).Range.Text = "Координаты, м"
+                        WDocTbl.Cell(2, 2).Range.Text = "X"
+                        WDocTbl.Cell(2, 3).Range.Text = "Y"
+                        If objCatalog.ExtendedProperties = True And WDocTbl.Columns.Count = 6 Then
+                            WDocTbl.Cell(1, 3).Merge(WDocTbl.Cell(2, 4))
+                            WDocTbl.Cell(1, 3).Range.Text = "Метод определения координат"
+                            WDocTbl.Cell(1, 4).Merge(WDocTbl.Cell(2, 5))
+                            WDocTbl.Cell(1, 4).Range.Text = "Средняя квадратическая погрешность положения характерных точек (Mt), м"
+                            WDocTbl.Cell(1, 5).Merge(WDocTbl.Cell(2, 6))
+                            WDocTbl.Cell(1, 5).Range.Text = "Описание обозначения точки на местности (при наличии)"
+                        End If
+                        Dim count2 As Integer = 3
+                        For Each row As CatalogCoordinatesRow In objCatalog.Rows
+                            If row.kindRow = 1 Then
+                                WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
+                                WDocTbl.Cell(count2, 1).Range.Text = row.Number
+                            ElseIf row.kindRow = -1 Then
+                                WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
+                                WDocTbl.Cell(count2, 1).Range.Text = ""
+                            Else
+                                WDocTbl.Cell(count2, 1).Range.Text = row.Number
+                                WDocTbl.Cell(count2, 2).Range.Text = formatCoord(row.X)
+                                WDocTbl.Cell(count2, 3).Range.Text = formatCoord(row.Y)
+                                If objCatalog.ExtendedProperties = True Then
+                                    Dim metod As String = row.Method
+                                    If IsNothing(metod) = True Then
+                                        metod = "-"
+                                    End If
+                                    If metod.Trim.Length = 0 Then
+                                        metod = "-"
+                                    End If
+                                    WDocTbl.Cell(count2, 4).Range.Text = metod
+                                    Dim deltaYX As String = row.Delta
+                                    If IsNothing(deltaYX) = True Then
+                                        deltaYX = "0"
+                                    End If
+                                    Dim di As Double = Val(deltaYX)
+                                    If di = 0 Then
+                                        di = 0.1
+                                    End If
+                                    WDocTbl.Cell(count2, 5).Range.Text = formatCoord(di)
+                                    Dim deskPoint As String = row.FastDesk
+                                    If IsNothing(deskPoint) = True Then
+                                        deskPoint = ""
+                                    End If
+                                    WDocTbl.Cell(count2, 6).Range.Text = deskPoint
+                                End If
+                            End If
+                            count2 = count2 + 1
+                        Next
+                        If boolOutTotal = True Then
+                            WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
+                            WDocTbl.Cell(count2, 1).Range.Text = totalCatalog(objCatalog)
+                        End If
+                        Try
+                            WDocTbl.Title = "Каталог координат"
+                            Dim deskStr As String = "ObjectNumber=" & numberParcel & "; DescObject=" & deskCadastralObject
+                            WDocTbl.Descr = deskStr
+                        Catch ex2 As Exception
+                        End Try
+                        WDocTbl.AutoFitBehavior(Microsoft.Office.Interop.Word.WdAutoFitBehavior.wdAutoFitContent)
+                        WDocTbl.Rows.Alignment = Microsoft.Office.Interop.Word.WdRowAlignment.wdAlignRowCenter
+                        insertPos = WDocTbl.Range.End
+                        Dim range6 As Microsoft.Office.Interop.Word.Range = WDoc.Range(insertPos, insertPos)
+                        rng = range6
+                        rng.Paragraphs.Add()
+                    Next
+                    WApp.Visible = True
+                Else
+                    Dim listDocTbl As List(Of Word.Table) = MSWord.GetWordDocumentTables(WDoc, "Каталог координат")
+                    If listDocTbl.Count > 0 Then
+                        WApp.ScreenUpdating = False
+                        For Each objCatalog As CatalogCoordinatesObject In listCatalog
+                            progressStep("Word: объект " & objCatalog.ConditionNumber)
+                            Dim conditionalParcel As String = objCatalog.ConditionNumber
+                            Dim numberParcel As Integer = 1
+                            If Integer.TryParse(conditionalParcel.ToString, numberParcel) = False Then
+                                numberParcel = DataFormatting.GetNumberBeforeParenthesis(conditionalParcel)
+                            End If
+                            Dim WDocTbl As Word.Table = Nothing
+                            For Each tbl As Word.Table In listDocTbl
+                                Dim deskTbl As String() = tbl.Descr.Split(";")
+                                For i As Integer = 0 To deskTbl.Length - 1
+                                    Dim rez As String = deskTbl(i).Replace("ObjectNumber=", "")
+                                    If IsNumeric(rez) = True Then
+                                        Dim findNumberObject As Integer = Val(rez)
+                                        If findNumberObject = numberParcel Then
+                                            WDocTbl = tbl
+                                            Exit For
+                                        End If
+                                    End If
+                                Next i
+                                If IsNothing(WDocTbl) = False Then
+                                    Exit For
+                                End If
+                            Next
+                            If IsNothing(WDocTbl) = False Then
+                                'запоминаем позицию таблицы, полностью удаляем её и вставляем на это место
+                                'новую таблицу, которую строим и заполняем так же, как в ветке "Новый файл".
+                                'Полное удаление таблицы не зависит от объединений ячеек, поэтому такой подход
+                                'обходит все ошибки 5991/5941 при удалении отдельных строк
+                                Dim tblStart As Integer = WDocTbl.Range.Start
+                                WDocTbl.Delete()
+                                'убираем удалённую таблицу из списка, чтобы последующие объекты
+                                'не натыкались на мёртвую ссылку при поиске своей таблицы
+                                listDocTbl.Remove(WDocTbl)
+                                Dim rngPos As Microsoft.Office.Interop.Word.Range = WDoc.Range(tblStart, tblStart)
+                                Dim newTbl As Word.Table = buildCatalogTable(WDoc, WApp, rngPos, objCatalog, numberParcel)
+                            End If
+                        Next
+                    End If
+                End If
+            End If
         Catch ex4 As Exception
             MsgBox("Ошибка при выводе в Word: " & ex4.Message)
         Finally
@@ -1351,6 +1760,102 @@ Public Class CatalogCoordinates
             End If
         End Try
     End Sub
+    '===============================================================================================================================
+    'построение и заполнение таблицы каталога координат в указанной позиции документа
+    '(код построения совпадает с веткой "Новый файл" exportWordFast;
+    'в ветке обновления используется для вставки новой таблицы на место удалённой)
+    Private Function buildCatalogTable(ByVal WDoc As Word.Document, ByVal WApp As Word.Application, ByVal rngPos As Microsoft.Office.Interop.Word.Range, ByVal objCatalog As CatalogCoordinatesObject, ByVal numberParcel As Integer) As Word.Table
+        Dim countColumns As Integer = 3
+        If objCatalog.ExtendedProperties = True Then
+            countColumns = 6
+        End If
+        Dim countRows As Integer = objCatalog.Rows.Count + 2
+        If boolOutTotal = True Then
+            countRows = countRows + 1
+        End If
+        Dim WDocTbl As Word.Table = WDoc.Tables.Add(rngPos, countRows, countColumns, Microsoft.Office.Interop.Word.WdDefaultTableBehavior.wdWord9TableBehavior, Microsoft.Office.Interop.Word.WdAutoFitBehavior.wdAutoFitFixed)
+        Try
+            WDocTbl.Style = "Сетка таблицы"
+        Catch exStyle As Exception
+        End Try
+        WDocTbl.ApplyStyleRowBands = True
+        'форматирование таблицы блоками до заполнения ячеек
+        WDocTbl.Range.Font.Name = "Times New Roman"
+        WDocTbl.Range.Select()
+        WApp.Selection.Paragraphs.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter
+        WApp.Selection.Cells.VerticalAlignment = Microsoft.Office.Interop.Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter
+        WDocTbl.Rows(1).Range.Bold = -1
+        WDocTbl.Rows(2).Range.Bold = -1
+        'делаем шапку таблицы (строки будут повторяться на каждой странице)
+        WDocTbl.Rows(1).HeadingFormat = True
+        WDocTbl.Rows(2).HeadingFormat = True
+        WDocTbl.Cell(1, 1).Merge(WDocTbl.Cell(2, 1))
+        WDocTbl.Cell(1, 1).Range.Text = "Обозначение" & vbLf & "характерных" & vbLf & "точек границ"
+        WDocTbl.Cell(1, 2).Merge(WDocTbl.Cell(1, 3))
+        WDocTbl.Cell(1, 2).Range.Text = "Координаты, м"
+        WDocTbl.Cell(2, 2).Range.Text = "X"
+        WDocTbl.Cell(2, 3).Range.Text = "Y"
+        If objCatalog.ExtendedProperties = True And WDocTbl.Columns.Count = 6 Then
+            WDocTbl.Cell(1, 3).Merge(WDocTbl.Cell(2, 4))
+            WDocTbl.Cell(1, 3).Range.Text = "Метод определения координат"
+            WDocTbl.Cell(1, 4).Merge(WDocTbl.Cell(2, 5))
+            WDocTbl.Cell(1, 4).Range.Text = "Средняя квадратическая погрешность положения характерных точек (Mt), м"
+            WDocTbl.Cell(1, 5).Merge(WDocTbl.Cell(2, 6))
+            WDocTbl.Cell(1, 5).Range.Text = "Описание обозначения точки на местности (при наличии)"
+        End If
+        Dim count2 As Integer = 3
+        For Each row As CatalogCoordinatesRow In objCatalog.Rows
+            If row.kindRow = 1 Then
+                WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
+                WDocTbl.Cell(count2, 1).Range.Text = row.Number
+            ElseIf row.kindRow = -1 Then
+                WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
+                WDocTbl.Cell(count2, 1).Range.Text = ""
+            Else
+                WDocTbl.Cell(count2, 1).Range.Text = row.Number
+                WDocTbl.Cell(count2, 2).Range.Text = formatCoord(row.X)
+                WDocTbl.Cell(count2, 3).Range.Text = formatCoord(row.Y)
+                If objCatalog.ExtendedProperties = True Then
+                    Dim metod As String = row.Method
+                    If IsNothing(metod) = True Then
+                        metod = "-"
+                    End If
+                    If metod.Trim.Length = 0 Then
+                        metod = "-"
+                    End If
+                    WDocTbl.Cell(count2, 4).Range.Text = metod
+                    Dim deltaYX As String = row.Delta
+                    If IsNothing(deltaYX) = True Then
+                        deltaYX = "0"
+                    End If
+                    Dim di As Double = Val(deltaYX)
+                    If di = 0 Then
+                        di = 0.1
+                    End If
+                    WDocTbl.Cell(count2, 5).Range.Text = formatCoord(di)
+                    Dim deskPoint As String = row.FastDesk
+                    If IsNothing(deskPoint) = True Then
+                        deskPoint = ""
+                    End If
+                    WDocTbl.Cell(count2, 6).Range.Text = deskPoint
+                End If
+            End If
+            count2 = count2 + 1
+        Next
+        If boolOutTotal = True Then
+            WDocTbl.Cell(count2, 1).Merge(WDocTbl.Cell(count2, countColumns))
+            WDocTbl.Cell(count2, 1).Range.Text = totalCatalog(objCatalog)
+        End If
+        Try
+            WDocTbl.Title = "Каталог координат"
+            Dim deskStr As String = "ObjectNumber=" & numberParcel & "; DescObject=" & deskCadastralObject
+            WDocTbl.Descr = deskStr
+        Catch ex2 As Exception
+        End Try
+        WDocTbl.AutoFitBehavior(Microsoft.Office.Interop.Word.WdAutoFitBehavior.wdAutoFitContent)
+        WDocTbl.Rows.Alignment = Microsoft.Office.Interop.Word.WdRowAlignment.wdAlignRowCenter
+        Return WDocTbl
+    End Function
     '===============================================================================================================================
     'очистка имени файла от недопустимых символов
     Private Function sanitizeFileName(ByVal name As String) As String

@@ -1,4 +1,4 @@
-﻿Imports System.IO
+Imports System.IO
 Imports System.Runtime.InteropServices
 Imports Word = Microsoft.Office.Interop.Word
 
@@ -77,6 +77,9 @@ Public Class MSWord
     '''      берётся последняя такая строка, идущая непрерывно от начала.
     '''   2) Иначе — по ключевым словам, переданным в keywords.
     ''' Возвращает 0, если шапку найти не удалось.
+    ''' ВАЖНО: при вертикальных объединениях ячеек в таблице не работают tbl.Rows(i)
+    ''' и чтение Cell.RowIndex/ColumnIndex (ошибка 5991), поэтому вся адресация идёт
+    ''' через tbl.Cell(row, col) — она корректно возвращает объединённые ячейки.
     ''' </summary>
     ''' <param name="tbl">Таблица Word.</param>
     ''' <param name="keywords">Список ключевых слов, характерных для шапки.</param>
@@ -90,23 +93,52 @@ Public Class MSWord
             Return 0
         End Try
         If rowsCount = 0 Then Return 0
+
+        'количество колонок сетки таблицы
+        Dim colsCount As Integer
+        Try
+            colsCount = tbl.Columns.Count
+        Catch
+            colsCount = 1
+        End Try
+        If colsCount < 1 Then colsCount = 1
+
+        Dim limit As Integer = Math.Min(rowsCount, Math.Max(1, maxHeaderRows))
+
         ' --- 1. По HeadingFormat ---
         Dim lastHeading As Integer = 0
-        For i As Integer = 1 To rowsCount
-            Dim row As Word.Row = Nothing
-            Try
-                row = tbl.Rows(i)
-                If row.HeadingFormat Then
-                    lastHeading = i
-                ElseIf lastHeading > 0 Then
-                    ' HeadingFormat шёл непрерывно с начала — прервался, стоп
-                    Exit For
-                End If
-            Finally
-                If row IsNot Nothing Then Marshal.ReleaseComObject(row)
-            End Try
+        For i As Integer = 1 To limit
+            Dim isHeading As Boolean = False
+            Dim rowExists As Boolean = False
+            For c As Integer = 1 To colsCount
+                Dim cel As Word.Cell = Nothing
+                Try
+                    cel = tbl.Cell(i, c)
+                    rowExists = True
+                    'для вертикально объединённой ячейки Rows(1) — первая строка её диапазона
+                    If cel.Range.Rows(1).HeadingFormat Then
+                        isHeading = True
+                        Exit For
+                    End If
+                Catch
+                    'ячейки (i, c) в сетке нет — пропускаем
+                Finally
+                    If cel IsNot Nothing Then Marshal.ReleaseComObject(cel)
+                End Try
+            Next
+            If rowExists = False Then
+                'строки i в таблице нет — дальше не смотрим
+                Exit For
+            End If
+            If isHeading Then
+                lastHeading = i
+            ElseIf lastHeading > 0 Then
+                'заголовочные строки шли непрерывно от начала и прервались
+                Exit For
+            End If
         Next
         If lastHeading > 0 Then Return lastHeading
+
         ' --- 2. По ключевым словам ---
         Dim kwList As List(Of String) = Nothing
         If keywords IsNot Nothing Then
@@ -116,14 +148,15 @@ Public Class MSWord
         End If
         If kwList Is Nothing OrElse kwList.Count = 0 Then Return 0
         Dim lastHeader As Integer = 0
-        Dim limit As Integer = Math.Min(rowsCount, Math.Max(1, maxHeaderRows))
         For i As Integer = 1 To limit
-            Dim row As Word.Row = Nothing
             Dim isHeaderRow As Boolean = False
-            Try
-                row = tbl.Rows(i)
-                For Each cell As Word.Cell In row.Cells
-                    Dim txt As String = CleanCellText(cell.Range.Text)
+            Dim rowExists As Boolean = False
+            For c As Integer = 1 To colsCount
+                Dim cel As Word.Cell = Nothing
+                Try
+                    cel = tbl.Cell(i, c)
+                    rowExists = True
+                    Dim txt As String = CleanCellText(cel.Range.Text)
                     For Each kw As String In kwList
                         If txt.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0 Then
                             isHeaderRow = True
@@ -131,15 +164,17 @@ Public Class MSWord
                         End If
                     Next
                     If isHeaderRow Then Exit For
-                Next
-            Finally
-                If row IsNot Nothing Then Marshal.ReleaseComObject(row)
-            End Try
-
+                Catch
+                    'ячейки (i, c) в сетке нет — пропускаем
+                Finally
+                    If cel IsNot Nothing Then Marshal.ReleaseComObject(cel)
+                End Try
+            Next
+            If rowExists = False Then Exit For
             If isHeaderRow Then
                 lastHeader = i
             ElseIf lastHeader > 0 Then
-                ' Шапка шла непрерывно, прервалась — значит, закончилась
+                'Шапка шла непрерывно, прервалась — значит, закончилась
                 Exit For
             End If
         Next
@@ -178,7 +213,7 @@ Public Class MSWord
     ''' <returns>Количество удалённых строк.</returns>
     Public Function ClearTableBody(tbl As Word.Table, headerEndRow As Integer) As Integer
         If tbl Is Nothing Then Return 0
-        If headerEndRow < 0 Then Return 0
+        If headerEndRow < 1 Then Return 0
 
         Dim rowsCount As Integer
         Try
@@ -189,25 +224,41 @@ Public Class MSWord
 
         If rowsCount <= headerEndRow Then Return 0
 
-        Dim toDelete As Integer = rowsCount - headerEndRow
-        Dim deleted As Integer = 0
-
-        For k As Integer = 1 To toDelete
-            Dim row As Word.Row = Nothing
-            Try
-                ' Всегда удаляем строку сразу после шапки.
-                ' Индексы сдвигаются, поэтому каждый раз это одна и та же позиция.
-                row = tbl.Rows(headerEndRow + 1)
-                row.Delete()
-                deleted += 1
-            Catch ex As Exception
-                Debug.WriteLine($"Не удалось удалить строку {headerEndRow + 1}: {ex.Message}")
-                Exit For
-            Finally
-                If row IsNot Nothing Then Marshal.ReleaseComObject(row)
-            End Try
+        'Удаляем тело таблицы одним диапазоном: от конца шапки до конца таблицы.
+        'Не используем tbl.Rows(i).Delete() — при вертикальных объединениях ячеек
+        'индексация Rows ломается, а Row.Delete() выдаёт ошибку 5991.
+        'Конец шапки ищем как максимальный Range.End среди её ячеек: вертикально
+        'объединённая ячейка адресуется через Cell(row, col) только по верхней-левой
+        'ячейке, а Cell(headerEndRow, 1) при таком объединении бросает ошибку 5941.
+        Dim colsCount As Integer = 1
+        Try
+            colsCount = tbl.Columns.Count
+        Catch
+        End Try
+        If colsCount < 1 Then colsCount = 1
+        Dim headerEndPos As Integer = -1
+        For r As Integer = 1 To headerEndRow
+            For c As Integer = 1 To colsCount
+                Dim cel As Word.Cell = Nothing
+                Try
+                    cel = tbl.Cell(r, c)
+                    If cel.Range.End > headerEndPos Then headerEndPos = cel.Range.End
+                Catch
+                    'ячейки (r, c) в сетке нет — пропускаем
+                Finally
+                    If cel IsNot Nothing Then Marshal.ReleaseComObject(cel)
+                End Try
+            Next
         Next
-
-        Return deleted
+        If headerEndPos < 0 Then Return 0
+        Try
+            Dim rng As Word.Range = tbl.Range.Duplicate
+            rng.Start = headerEndPos
+            rng.Delete()
+            Return rowsCount - headerEndRow
+        Catch ex As Exception
+            Debug.WriteLine($"Не удалось удалить строки таблицы после {headerEndRow}: {ex.Message}")
+            Return 0
+        End Try
     End Function
 End Class

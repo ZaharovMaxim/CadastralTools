@@ -92,7 +92,7 @@ Public Class SelectCadastralObject
                     Dim userRing As StructureElement = destPolygon.UserData
                     Dim parentType As String = JsonValidator.GetValueFromJson(userRing.KeyParameter, "ParentNameType")
                     If String.IsNullOrEmpty(parentType) = False Then
-                        If parentType.Trim = CInt(userPolygon.NameTypeObject).ToString Then
+                        If parentType.Trim = CInt(userPolygon.NameTypeObject).ToString Or parentType.Trim Like userPolygon.Description Then
                             Dim areaDestPolygon As Double = destPolygon.Area
                             If areaDestPolygon > 0 Then
                                 If areaDestPolygon < areaSourcePolygon Then

@@ -36,6 +36,18 @@ Public Class CadastralOstrov
                 End If
             Next i
         End If
+        If result.ContainsKey("ParentNameType") = False Then
+            result.Item("ParentNameType") = parentObject.Description
+        End If
+        If result.ContainsKey("ParentNumber") = False Then
+            result.Item("ParentNumber") = conditionalParentParcel
+        End If
+        If result.ContainsKey("IDKOUNTER") = False Then
+            result.Item("IDKOUNTER") = parentObject.IdElement
+        End If
+        If result.ContainsKey("ConditionalNumber") = False Then
+            result.Item("ConditionalNumber") = number
+        End If
         Dim keyParameter As String = JsonValidator.convertDictionaryToJson(result)
         dataProjectOstrov.KeyParameter = keyParameter
         Return dataProjectOstrov
