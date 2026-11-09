@@ -72,6 +72,7 @@ Public Class FormReportCatalogCoordinatesCadastralObject
             listDocFiles.Add("Каждый объект в своем листе")
             listDocFiles.Add("Каждый объект в отдельном файле")
             listDocFiles.Add("Для проекта межевания")
+            listDocFiles.Add("WGS84")
             CBox_SelectTemplate.DataSource = Nothing
             CBox_SelectTemplate.DataSource = listDocFiles
         End If

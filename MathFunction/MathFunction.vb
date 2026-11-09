@@ -54,8 +54,6 @@ Public Class MathFunction
         Catch ex As Exception
         End Try
     End Function
-
-
     '===================================================================================================
     'функция округляет чило вниз 3.7777777 - 7.77
     Public Shared Function trimDigitFloo(ByVal a As Double, ByVal n As Integer) As Double
@@ -279,6 +277,70 @@ Public Class MathFunction
         Catch ex As Exception
         End Try
     End Function
+    '===================================================================================================
+    'нахождение расстояние между двумя точками
+    Public Shared Function GetDistanceRoundedToMillimeter(firstPoint As Point, secondPoint As Point) As Double
+
+        If firstPoint Is Nothing OrElse secondPoint Is Nothing Then
+            Throw New ArgumentNullException("Точки не могут быть Nothing.")
+        End If
+        If firstPoint.IsEmpty OrElse secondPoint.IsEmpty Then
+            Return 0.0
+        End If
+
+        ' Расстояние между точками (2D)
+        Dim dist As Double = firstPoint.Distance(secondPoint)
+
+        ' Округление до 1 мм = 0.001 м
+        Return Math.Round(dist, 3, MidpointRounding.AwayFromZero)
+    End Function
+    '========================================================================================================
+    'вычисление координаты точки на отрезке
+    Public Shared Function GetPointAtDistance(startPoint As Point, endPoint As Point, distance As Double, Optional ByRef z As Double = 0) As Point
+
+        If startPoint Is Nothing OrElse endPoint Is Nothing Then
+            Throw New ArgumentNullException("Точки не могут быть Nothing.")
+        End If
+        If startPoint.IsEmpty OrElse endPoint.IsEmpty Then
+            Return Nothing
+        End If
+
+        ' Длина отрезка
+        Dim segmentLength As Double = startPoint.Distance(endPoint)
+
+        ' Если точки совпадают — отрезок нулевой длины
+        If segmentLength < 0.000000000001 Then
+            If Math.Abs(distance) < 0.000000000001 Then
+                Return startPoint.Factory.CreatePoint(startPoint.Coordinate)
+            End If
+            Return Nothing
+        End If
+
+        ' Если расстояние вне диапазона — возвращаем Nothing
+        If distance < 0 OrElse distance > segmentLength Then
+            Return Nothing
+        End If
+
+        ' Коэффициент пропорциональности
+        Dim t As Double = distance / segmentLength
+
+        ' Интерполяция координат
+        Dim sx As Double = startPoint.X
+        Dim sy As Double = startPoint.Y
+        Dim ex As Double = endPoint.X
+        Dim ey As Double = endPoint.Y
+
+        Dim newX As Double = sx + (ex - sx) * t
+        Dim newY As Double = sy + (ey - sy) * t
+
+        ' Z-координата (если есть)
+        Dim sz As Double = startPoint.Coordinate.Z
+        Dim ez As Double = endPoint.Coordinate.Z
+        z = sz + (ez - sz) * t
+
+        Return startPoint.Factory.CreatePoint(New Coordinate(newX, newY))
+    End Function
+
 
     '===================================================================================================
     'функция ищет координаты середины отрезка

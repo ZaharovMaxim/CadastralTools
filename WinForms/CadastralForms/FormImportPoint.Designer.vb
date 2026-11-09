@@ -216,7 +216,7 @@ Partial Class FormImportPoint
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.GroupBox1)
         Me.Name = "FormImportPoint"
-        Me.Text = "FormImportPoint"
+        Me.Text = "Импорт точек"
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
         Me.GroupBox2.ResumeLayout(False)

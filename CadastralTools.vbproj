@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>..\..\NET\</OutputPath>
+    <OutputPath>K:\Civil3DToolsUtility\NET\</OutputPath>
     <DocumentationFile>CadastralTools.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -52,12 +52,13 @@
   <ItemGroup>
     <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\NET\NetTopologySuite.dll</HintPath>
+      <HintPath>D:\NET\Topomatic Robur Road 16.0\NetTopologySuite.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\NET\Newtonsoft.Json.dll</HintPath>
+      <HintPath>D:\NET\Topomatic Robur Road 16.0\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -150,6 +151,12 @@
     <Compile Include="WinForms\CadastralForms\FormCreateCadastralObject.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreateCadastralPointByStep.Designer.vb">
+      <DependentUpon>FormCreateCadastralPointByStep.vb</DependentUpon>
+    </Compile>
+    <Compile Include="WinForms\CadastralForms\FormCreateCadastralPointByStep.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="WinForms\CadastralForms\FormCreateLabelParcels.Designer.vb">
       <DependentUpon>FormCreateLabelParcels.vb</DependentUpon>
     </Compile>
@@ -206,6 +213,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\CadastralForms\FormCreateCadastralObject.resx">
       <DependentUpon>FormCreateCadastralObject.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\CadastralForms\FormCreateCadastralPointByStep.resx">
+      <DependentUpon>FormCreateCadastralPointByStep.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\CadastralForms\FormCreateLabelParcels.resx">
       <DependentUpon>FormCreateLabelParcels.vb</DependentUpon>

@@ -2,7 +2,7 @@ Imports NetTopologySuite.Geometries
 
 Public Class SelectCadastralObject
     'получить объекты по описанию с объединением внутренних контуров и островков
-    Public Shared Function getCadastralObjectByDesk(ByVal dictCadastralObject As Dictionary(Of String, List(Of Geometry)), ByVal deskCadastralObject As String) As Dictionary(Of String, List(Of Geometry))
+    Public Shared Function getCadastralObjectByDesk(ByVal dictCadastralObject As Dictionary(Of String, List(Of Geometry)), ByVal deskCadastralObject As String, Optional listRing As List(Of Geometry) = Nothing) As Dictionary(Of String, List(Of Geometry))
         Dim result As New Dictionary(Of String, List(Of Geometry))
         If IsNothing(dictCadastralObject) = True Then Return result
         If IsNothing(deskCadastralObject) = True Then Return result
@@ -10,6 +10,8 @@ Public Class SelectCadastralObject
         Dim listOstrov As New List(Of Geometry)
         If dictCadastralObject.ContainsKey("Внутренний островок") = True Then
             listOstrov = dictCadastralObject.Item("Внутренний островок")
+        ElseIf IsNothing(listRing) = False Then
+            listOstrov = listRing
         End If
         Dim listCadastralObject As New List(Of Geometry)
         If dictCadastralObject.ContainsKey(deskCadastralObject) = True Then

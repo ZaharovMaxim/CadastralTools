@@ -39,10 +39,13 @@ Partial Class FormCreateCadastralObject
         Me.Column14 = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Column15 = New System.Windows.Forms.DataGridViewComboBoxColumn()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.ChBox_SortElements = New System.Windows.Forms.CheckBox()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.ComboBox_StyleLeader = New System.Windows.Forms.ComboBox()
         Me.CheckBox_CreateLeader = New System.Windows.Forms.CheckBox()
         Me.Label12 = New System.Windows.Forms.Label()
-        Me.ComboBox_StyleLeader = New System.Windows.Forms.ComboBox()
+        Me.ComboBox_TextLeader = New System.Windows.Forms.ComboBox()
         Me.Button_Cancel = New System.Windows.Forms.Button()
         Me.Button_OK = New System.Windows.Forms.Button()
         Me.GroupBox2.SuspendLayout()
@@ -173,10 +176,10 @@ Partial Class FormCreateCadastralObject
         '
         Me.DataGridView_PropertiesObject.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.DataGridView_PropertiesObject.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Column14, Me.Column15})
-        Me.DataGridView_PropertiesObject.Location = New System.Drawing.Point(5, 19)
+        Me.DataGridView_PropertiesObject.Location = New System.Drawing.Point(5, 39)
         Me.DataGridView_PropertiesObject.Name = "DataGridView_PropertiesObject"
         Me.DataGridView_PropertiesObject.RowHeadersVisible = False
-        Me.DataGridView_PropertiesObject.Size = New System.Drawing.Size(426, 321)
+        Me.DataGridView_PropertiesObject.Size = New System.Drawing.Size(426, 301)
         Me.DataGridView_PropertiesObject.TabIndex = 0
         '
         'Column14
@@ -198,6 +201,7 @@ Partial Class FormCreateCadastralObject
         '
         'GroupBox3
         '
+        Me.GroupBox3.Controls.Add(Me.ChBox_SortElements)
         Me.GroupBox3.Controls.Add(Me.DataGridView_PropertiesObject)
         Me.GroupBox3.Location = New System.Drawing.Point(5, 165)
         Me.GroupBox3.Name = "GroupBox3"
@@ -206,17 +210,48 @@ Partial Class FormCreateCadastralObject
         Me.GroupBox3.TabStop = False
         Me.GroupBox3.Text = "Характеристики создаваемого объекта"
         '
+        'ChBox_SortElements
+        '
+        Me.ChBox_SortElements.AutoSize = True
+        Me.ChBox_SortElements.Checked = True
+        Me.ChBox_SortElements.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.ChBox_SortElements.Location = New System.Drawing.Point(6, 16)
+        Me.ChBox_SortElements.Name = "ChBox_SortElements"
+        Me.ChBox_SortElements.Size = New System.Drawing.Size(324, 17)
+        Me.ChBox_SortElements.TabIndex = 1
+        Me.ChBox_SortElements.Text = "Упорядочить элементы по первому выбланному элементу"
+        Me.ChBox_SortElements.UseVisualStyleBackColor = True
+        '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.Label2)
+        Me.GroupBox1.Controls.Add(Me.ComboBox_StyleLeader)
         Me.GroupBox1.Controls.Add(Me.CheckBox_CreateLeader)
         Me.GroupBox1.Controls.Add(Me.Label12)
-        Me.GroupBox1.Controls.Add(Me.ComboBox_StyleLeader)
+        Me.GroupBox1.Controls.Add(Me.ComboBox_TextLeader)
         Me.GroupBox1.Location = New System.Drawing.Point(5, 517)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(435, 78)
+        Me.GroupBox1.Size = New System.Drawing.Size(435, 101)
         Me.GroupBox1.TabIndex = 59
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Подпись"
+        '
+        'Label2
+        '
+        Me.Label2.AutoSize = True
+        Me.Label2.Location = New System.Drawing.Point(345, 77)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(84, 13)
+        Me.Label2.TabIndex = 57
+        Me.Label2.Text = "Текст выноски"
+        '
+        'ComboBox_StyleLeader
+        '
+        Me.ComboBox_StyleLeader.FormattingEnabled = True
+        Me.ComboBox_StyleLeader.Location = New System.Drawing.Point(5, 44)
+        Me.ComboBox_StyleLeader.Name = "ComboBox_StyleLeader"
+        Me.ComboBox_StyleLeader.Size = New System.Drawing.Size(334, 21)
+        Me.ComboBox_StyleLeader.TabIndex = 56
         '
         'CheckBox_CreateLeader
         '
@@ -231,23 +266,23 @@ Partial Class FormCreateCadastralObject
         'Label12
         '
         Me.Label12.AutoSize = True
-        Me.Label12.Location = New System.Drawing.Point(308, 44)
+        Me.Label12.Location = New System.Drawing.Point(345, 47)
         Me.Label12.Name = "Label12"
-        Me.Label12.Size = New System.Drawing.Size(120, 13)
+        Me.Label12.Size = New System.Drawing.Size(84, 13)
         Me.Label12.TabIndex = 54
-        Me.Label12.Text = "Стиль мультивыноски"
+        Me.Label12.Text = "Стиль выноски"
         '
-        'ComboBox_StyleLeader
+        'ComboBox_TextLeader
         '
-        Me.ComboBox_StyleLeader.FormattingEnabled = True
-        Me.ComboBox_StyleLeader.Location = New System.Drawing.Point(6, 44)
-        Me.ComboBox_StyleLeader.Name = "ComboBox_StyleLeader"
-        Me.ComboBox_StyleLeader.Size = New System.Drawing.Size(296, 21)
-        Me.ComboBox_StyleLeader.TabIndex = 53
+        Me.ComboBox_TextLeader.FormattingEnabled = True
+        Me.ComboBox_TextLeader.Location = New System.Drawing.Point(5, 74)
+        Me.ComboBox_TextLeader.Name = "ComboBox_TextLeader"
+        Me.ComboBox_TextLeader.Size = New System.Drawing.Size(334, 21)
+        Me.ComboBox_TextLeader.TabIndex = 53
         '
         'Button_Cancel
         '
-        Me.Button_Cancel.Location = New System.Drawing.Point(5, 601)
+        Me.Button_Cancel.Location = New System.Drawing.Point(5, 624)
         Me.Button_Cancel.Name = "Button_Cancel"
         Me.Button_Cancel.Size = New System.Drawing.Size(114, 25)
         Me.Button_Cancel.TabIndex = 46
@@ -256,7 +291,7 @@ Partial Class FormCreateCadastralObject
         '
         'Button_OK
         '
-        Me.Button_OK.Location = New System.Drawing.Point(334, 601)
+        Me.Button_OK.Location = New System.Drawing.Point(334, 624)
         Me.Button_OK.Name = "Button_OK"
         Me.Button_OK.Size = New System.Drawing.Size(106, 25)
         Me.Button_OK.TabIndex = 43
@@ -269,20 +304,21 @@ Partial Class FormCreateCadastralObject
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.AutoSize = True
         Me.BackColor = System.Drawing.Color.SkyBlue
-        Me.ClientSize = New System.Drawing.Size(449, 631)
+        Me.ClientSize = New System.Drawing.Size(449, 661)
         Me.Controls.Add(Me.GroupBox3)
         Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.GroupBox2)
         Me.Controls.Add(Me.Button_Cancel)
         Me.Controls.Add(Me.Button_OK)
-        Me.MaximumSize = New System.Drawing.Size(465, 670)
-        Me.MinimumSize = New System.Drawing.Size(465, 670)
+        Me.MaximumSize = New System.Drawing.Size(465, 700)
+        Me.MinimumSize = New System.Drawing.Size(465, 700)
         Me.Name = "FormCreateCadastralObject"
         Me.Text = "Создать участок"
         Me.GroupBox2.ResumeLayout(False)
         Me.GroupBox2.PerformLayout()
         CType(Me.DataGridView_PropertiesObject, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox3.ResumeLayout(False)
+        Me.GroupBox3.PerformLayout()
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
         Me.ResumeLayout(False)
@@ -295,7 +331,7 @@ Partial Class FormCreateCadastralObject
     Friend WithEvents Button_OK As Windows.Forms.Button
     Friend WithEvents GroupBox1 As Windows.Forms.GroupBox
     Friend WithEvents Label12 As Windows.Forms.Label
-    Friend WithEvents ComboBox_StyleLeader As Windows.Forms.ComboBox
+    Friend WithEvents ComboBox_TextLeader As Windows.Forms.ComboBox
     Friend WithEvents GroupBox3 As Windows.Forms.GroupBox
     Friend WithEvents DataGridView_PropertiesObject As Windows.Forms.DataGridView
     Friend WithEvents Label14 As Windows.Forms.Label
@@ -310,4 +346,7 @@ Partial Class FormCreateCadastralObject
     Friend WithEvents RadioButton_Polyline As Windows.Forms.RadioButton
     Friend WithEvents RadioButton_Polygon As Windows.Forms.RadioButton
     Friend WithEvents CheckBox_CreateLeader As Windows.Forms.CheckBox
+    Friend WithEvents ChBox_SortElements As Windows.Forms.CheckBox
+    Friend WithEvents Label2 As Windows.Forms.Label
+    Friend WithEvents ComboBox_StyleLeader As Windows.Forms.ComboBox
 End Class

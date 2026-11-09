@@ -4,7 +4,10 @@ Imports NetTopologySuite
 Imports NetTopologySuite.Algorithm
 Imports NetTopologySuite.Geometries
 Imports NetTopologySuite.Geometries.Prepared
+Imports NetTopologySuite.LinearReferencing
+Imports NetTopologySuite.Operation.Buffer
 Imports NetTopologySuite.Operation.Distance
+Imports NetTopologySuite.Operation.Linemerge
 Imports NetTopologySuite.Operation.Union
 Imports NetTopologySuite.Simplify
 Imports Point = NetTopologySuite.Geometries.Point
@@ -49,6 +52,17 @@ Public Class FuncNetTopologySuite
             End If
         End If
         Return _geometryFactory.CreateLinearRing(coordArray)
+    End Function
+    'нахождение прамоугольника ограничений
+    Public Function GetBounds(geometry As Geometry) As (MinX As Double, MinY As Double, MaxX As Double, MaxY As Double)?
+        If geometry Is Nothing OrElse geometry.IsEmpty Then
+            Return Nothing
+        End If
+
+        ' EnvelopeInternal — встроенное свойство NTS, возвращающее ограничивающий прямоугольник.
+        Dim envelope As Envelope = geometry.EnvelopeInternal
+
+        Return (envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY)
     End Function
     '=============================================================================================================================
     'работа с полигононами
@@ -375,6 +389,29 @@ Public Class FuncNetTopologySuite
 
         Return sorted
     End Function
+    Public Function SortByNearestNeighborFirstElement(polygons As List(Of NetTopologySuite.Geometries.Polygon)) As List(Of NetTopologySuite.Geometries.Polygon)
+        If polygons Is Nothing OrElse polygons.Count <= 1 Then Return polygons
+
+        Dim remaining = New List(Of NetTopologySuite.Geometries.Polygon)(polygons)
+        Dim sorted = New List(Of NetTopologySuite.Geometries.Polygon)(polygons.Count)
+
+        ' Начинаем с ПЕРВОГО элемента исходного списка
+        Dim current = remaining(0)
+        sorted.Add(current)
+        remaining.RemoveAt(0)
+
+        While remaining.Count > 0
+            Dim nearest = remaining _
+            .OrderBy(Function(p) p.Distance(current)) _
+            .First()
+            sorted.Add(nearest)
+            remaining.Remove(nearest)
+            current = nearest
+        End While
+
+        Return sorted
+    End Function
+    'функция упорядочивает полигоны (Универсальная функция)
     Public Shared Function SortByNearestNeighbor(Of T As Geometry)(geometries As List(Of T)) As List(Of T)
         If geometries Is Nothing OrElse geometries.Count <= 1 Then
             Return geometries
@@ -400,6 +437,31 @@ Public Class FuncNetTopologySuite
 
         Return sorted
     End Function
+    Public Shared Function SortByNearestNeighborFirstElement(Of T As Geometry)(geometries As List(Of T)) As List(Of T)
+        If geometries Is Nothing OrElse geometries.Count <= 1 Then
+            Return geometries
+        End If
+
+        Dim remaining As New List(Of T)(geometries)
+        Dim sorted As New List(Of T)(geometries.Count)
+
+        ' Начинаем с ПЕРВОГО элемента исходного списка
+        Dim current As T = remaining(0)
+        sorted.Add(current)
+        remaining.RemoveAt(0)
+
+        While remaining.Count > 0
+            Dim nearest As T = remaining _
+            .OrderBy(Function(g) g.Distance(current)) _
+            .First()
+            sorted.Add(nearest)
+            remaining.Remove(nearest)
+            current = nearest
+        End While
+
+        Return sorted
+    End Function
+
     ''' <summary>
     ''' Делает начальной вершиной северо-западный угол для внешнего кольца
     ''' и для каждой дырки. Критерий СЗ: минимальный X; при равных X — максимальный Y.
@@ -636,12 +698,9 @@ Public Class FuncNetTopologySuite
 
         Return unique.ToArray()
     End Function
-
-
-
-
     '============================================================================================================================
     'работа с полилинией
+    '===============================================================================================================================
     Public Function CreateLineString(coordinates(,) As String) As LineString
         ' Проверяем, что передано хотя бы 2 точки
         If coordinates.GetLength(0) < 2 Then
@@ -742,8 +801,6 @@ Public Class FuncNetTopologySuite
 
         Return RemoveDuplicatesFromSequence(line, tolerance, isRing:=False)
     End Function
-
-
     ''' <summary>
     ''' Удаляет дублирующие вершины из LinearRing.
     ''' </summary>
@@ -757,8 +814,6 @@ Public Class FuncNetTopologySuite
         ' иначе ring может стать незамкнутым.
         Return RemoveDuplicatesFromSequence(ring, tolerance, isRing:=True)
     End Function
-
-
     ''' <summary>
     ''' Вспомогательная функция: убирает вершины, расстояние от которых
     ''' до предыдущей принятой вершины меньше tolerance.
@@ -938,6 +993,250 @@ Public Class FuncNetTopologySuite
             Return False
         End Try
     End Function
+    ''' Положительная — влево от направления линии, отрицательная — вправо.</param>
+    ''' <param name="precisionModel">Модель точности (по умолчанию — точная)</param>
+    ''' <returns>Новая смещённая LineString или Nothing, если смещение невозможно</returns>
+    Public Function CreateOffsetLineString(source As LineString, offset As Double, Optional precisionModel As PrecisionModel = Nothing) As LineString
+        ' --- Валидация входных данных ---
+        If source Is Nothing Then
+            Return Nothing
+        End If
+        If source.IsEmpty Then
+            Return Nothing
+        End If
+        If Math.Abs(offset) < 0.001 Then
+            Return source
+        End If
+        If precisionModel Is Nothing Then
+            precisionModel = New PrecisionModel()
+        End If
+        Dim factory As GeometryFactory = source.Factory
+        ' --- Шаг 1: создаём буфер с одной стороны ---
+        ' SingleSided = True означает, что буфер строится только с одной стороны линии.
+        ' EndCapStyle.Flat — плоские торцы (без полукругов на концах).
+        ' JoinStyle.Mitre — острые углы на стыках сегментов.
+        Dim bufferParams As New BufferParameters() With {
+            .EndCapStyle = EndCapStyle.Flat,
+            .JoinStyle = JoinStyle.Mitre,
+            .IsSingleSided = True,
+            .MitreLimit = 5.0
+        }
+
+        Dim bufferOp As New BufferOp(source, bufferParams)
+        Dim buffered As Geometry = bufferOp.GetResultGeometry(offset)
+
+        If buffered Is Nothing OrElse buffered.IsEmpty Then
+            Return Nothing
+        End If
+
+        ' --- Шаг 2: извлекаем границу буфера (это и есть смещённая линия) ---
+        Dim boundary As Geometry = buffered.Boundary
+
+        ' --- Шаг 3: из результата извлекаем LineString ---
+        Dim resultLine As LineString = ExtractLineString(boundary, factory)
+
+        If resultLine Is Nothing Then
+            Return Nothing
+        End If
+
+        ' --- Шаг 4: при необходимости упрощаем/сливаем сегменты ---
+        ' Если буфер дал несколько сегментов, объединяем их в одну линию
+        If TypeOf boundary Is MultiLineString Then
+            Dim merger As New LineMerger()
+            merger.Add(boundary)
+            Dim merged As IList(Of LineString) = merger.GetMergedLineStrings()
+
+            If merged.Count > 0 Then
+                ' Берём самый длинный сегмент (обычно это и есть смещённая линия)
+                Dim longest As LineString = merged(0)
+                For Each ls As LineString In merged
+                    If ls.Length > longest.Length Then
+                        longest = ls
+                    End If
+                Next
+                resultLine = longest
+            End If
+        End If
+
+        Return resultLine
+    End Function
+
+    ''' <summary>
+    ''' Извлекает LineString из геометрии (LineString или MultiLineString).
+    ''' </summary>
+    Private Function ExtractLineString(geom As Geometry, factory As GeometryFactory) As LineString
+        If geom Is Nothing OrElse geom.IsEmpty Then
+            Return Nothing
+        End If
+
+        If TypeOf geom Is LineString Then
+            Return DirectCast(geom, LineString)
+        End If
+
+        If TypeOf geom Is MultiLineString Then
+            Dim multi As MultiLineString = DirectCast(geom, MultiLineString)
+            If multi.NumGeometries = 0 Then Return Nothing
+
+            ' Если в MultiLineString один сегмент — возвращаем его
+            If multi.NumGeometries = 1 Then
+                Return DirectCast(multi.GetGeometryN(0), LineString)
+            End If
+
+            ' Иначе собираем все координаты в одну линию
+            Dim allCoords As New List(Of Coordinate)()
+            For i As Integer = 0 To multi.NumGeometries - 1
+                Dim ls As LineString = DirectCast(multi.GetGeometryN(i), LineString)
+                For Each coord As Coordinate In ls.Coordinates
+                    allCoords.Add(coord)
+                Next
+            Next
+
+            If allCoords.Count < 2 Then Return Nothing
+
+            Return factory.CreateLineString(allCoords.ToArray())
+        End If
+
+        Return Nothing
+    End Function
+
+    ''' <summary>
+    ''' Аналог AutoCAD GetDistAtPoint: возвращает расстояние от начала линии до точки.
+    ''' Если точка не лежит точно на линии — используется проекция на линию.
+    ''' </summary>
+    ''' <param name="line">Исходная LineString</param>
+    ''' <param name="point">Точка, для которой нужно найти расстояние</param>
+    ''' <param name="useProjection">Если True — точка проецируется на линию (для точек, не лежащих точно на линии)</param>
+    ''' <returns>Расстояние от начала линии до точки (или её проекции)</returns>
+    Public Function GetDistAtPoint(line As LineString, point As Coordinate, Optional useProjection As Boolean = True) As Double
+
+        If line Is Nothing Then
+            Throw New ArgumentNullException(NameOf(line))
+        End If
+        If point Is Nothing Then
+            Throw New ArgumentNullException(NameOf(point))
+        End If
+        If line.IsEmpty Then
+            Return Double.NaN
+        End If
+
+        Dim indexedLine As New LengthIndexedLine(line)
+
+        If useProjection Then
+            ' Проецируем точку на линию и получаем расстояние до проекции
+            Return indexedLine.Project(point)
+        Else
+            ' Точка должна лежать точно на линии
+            Return indexedLine.IndexOf(point)
+        End If
+    End Function
+
+    ''' <summary>
+    ''' Аналог AutoCAD GetPointAtDist: возвращает точку на линии на заданном расстоянии от начала.
+    ''' </summary>
+    ''' <param name="line">Исходная LineString</param>
+    ''' <param name="distance">Расстояние от начала линии</param>
+    ''' <returns>Coordinate на заданном расстоянии (или Nothing, если расстояние вне диапазона)</returns>
+    Public Function GetPointAtDist(line As LineString, distance As Double) As Coordinate
+
+        If line Is Nothing Then
+            Throw New ArgumentNullException(NameOf(line))
+        End If
+        If line.IsEmpty Then
+            Return Nothing
+        End If
+        If distance < 0 OrElse distance > line.Length Then
+            Return Nothing
+        End If
+
+        Dim indexedLine As New LengthIndexedLine(line)
+        Return indexedLine.ExtractPoint(distance)
+    End Function
+
+    Public Function EnsureMinDistance(prevPoint As Coordinate, ByRef nextPoint As Coordinate, minDistance As Double) As Boolean
+
+        If prevPoint Is Nothing Then
+            Throw New ArgumentNullException(NameOf(prevPoint))
+        End If
+        If nextPoint Is Nothing Then
+            Throw New ArgumentNullException(NameOf(nextPoint))
+        End If
+        If minDistance <= 0 Then
+            Throw New ArgumentException("Допуск должен быть положительным.", NameOf(minDistance))
+        End If
+
+        ' Текущее расстояние
+        Dim currentDist As Double = prevPoint.Distance(nextPoint)
+
+        ' Если расстояние уже достаточно — ничего не делаем
+        If currentDist >= minDistance Then
+            Return False
+        End If
+
+        ' Вектор направления от prevPoint к nextPoint
+        Dim dx As Double = nextPoint.X - prevPoint.X
+        Dim dy As Double = nextPoint.Y - prevPoint.Y
+
+        ' Если точки совпадают — направление не определено,
+        ' сдвигаем по оси X (можно выбрать любое)
+        If Math.Abs(dx) < 0.000000000001 AndAlso Math.Abs(dy) < 0.000000000001 Then
+            nextPoint = New Coordinate(prevPoint.X + minDistance, prevPoint.Y)
+            Return True
+        End If
+
+        ' Нормируем вектор и отодвигаем на minDistance
+        Dim length As Double = Math.Sqrt(dx * dx + dy * dy)
+        Dim nx As Double = dx / length
+        Dim ny As Double = dy / length
+
+        Dim newX As Double = prevPoint.X + nx * minDistance
+        Dim newY As Double = prevPoint.Y + ny * minDistance
+
+        ' Z-координату сохраняем прежней (или можно интерполировать)
+        nextPoint = New Coordinate(newX, newY)
+
+        Return True
+    End Function
+
+    'функция упорядочивает точки на полилинии
+    Public Shared Function OrderPointsAlongLine(line As LineString, points As List(Of Point)) As List(Of Point)
+        If line Is Nothing Then
+            Throw New ArgumentNullException(NameOf(line))
+        End If
+        If points Is Nothing OrElse points.Count = 0 Then
+            Return New List(Of Point)()
+        End If
+        If line.IsEmpty Then
+            Return New List(Of Point)(points) ' нечего упорядочивать
+        End If
+
+        ' Создаём индекс длины для линии
+        Dim indexedLine As New LengthIndexedLine(line)
+
+        ' Для каждой точки вычисляем её позицию (расстояние от начала линии)
+        ' и сохраняем пару (позиция, точка)
+        Dim indexedPoints As New List(Of Tuple(Of Double, Point))(points.Count)
+
+        For Each pt As Point In points
+            If pt Is Nothing OrElse pt.IsEmpty Then
+                Continue For
+            End If
+
+            ' Проецируем точку на линию и получаем расстояние от начала
+            Dim dist As Double = indexedLine.Project(pt.Coordinate)
+            indexedPoints.Add(Tuple.Create(dist, pt))
+        Next
+
+        ' Сортируем по расстоянию от начала линии
+        indexedPoints.Sort(Function(a, b) a.Item1.CompareTo(b.Item1))
+
+        ' Извлекаем упорядоченные точки
+        Dim result As New List(Of Point)(indexedPoints.Count)
+        For Each item As Tuple(Of Double, Point) In indexedPoints
+            result.Add(item.Item2)
+        Next
+        Return result
+    End Function
+
     '============================================================================================================================
     'нахождение внутренних точек полигона
     '============================================================================================================================

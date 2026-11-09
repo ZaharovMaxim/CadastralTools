@@ -20,7 +20,6 @@ End Class
 'объект каталога координат (участок или линейный объект)
 Public Class CatalogCoordinatesObject
     Public ConditionNumber As String = ""
-
     Public IsRegion As Boolean = False
     Public TotalArea As Double = 0
     Public TotalLength As Double = 0
@@ -46,7 +45,7 @@ Public Class CatalogCoordinates
     Private deskCadastralObject As String = ""
     '===============================================================================================================================
     'главная процедура: формирование модели и вывод в выбранный формат
-    Public Sub CatalogExportCoordinates(ByVal dictCadastralObject As Dictionary(Of String, List(Of Geometry)), ByVal listBlockReference As Dictionary(Of String, Point), ByVal formCatalogCoordinates As FormReportCatalogCoordinatesCadastralObject, Optional ByVal drawTableCAD As Action(Of CatalogCoordinatesObject) = Nothing, Optional ByVal exportParcelDwgCAD As Action(Of CatalogCoordinatesObject) = Nothing)
+    Public Sub CatalogExportCoordinates(ByVal dictCadastralObject As Dictionary(Of String, List(Of Geometry)), ByVal listBlockReference As Dictionary(Of String, Point), ByVal formCatalogCoordinates As FormReportCatalogCoordinatesCadastralObject, Optional ByVal drawTableCAD As Action(Of CatalogCoordinatesObject) = Nothing, Optional ByVal exportParcelDwgCAD As Action(Of CatalogCoordinatesObject) = Nothing, Optional ByVal exportParcelWGS84 As Action(Of CatalogCoordinatesObject) = Nothing)
         If IsNothing(dictCadastralObject) = True Then Exit Sub
         If dictCadastralObject.Count = 0 Then Exit Sub
         If IsNothing(formCatalogCoordinates) = True Then Exit Sub
@@ -61,6 +60,7 @@ Public Class CatalogCoordinates
         tolerancePoint = Convert.ToDouble(formCatalogCoordinates.NUpD_TolerancePoint.Value)
         boolOutTotal = formCatalogCoordinates.boolArea
         deskCadastralObject = formCatalogCoordinates.CBox_TypeObject.Text
+        Dim typeReport As String = formCatalogCoordinates.CBox_SelectTemplate.Text
         Dim listCadastralObject As List(Of Geometry) = dictCadastralObject.ElementAt(0).Value
         If listCadastralObject.Count = 0 Then Exit Sub
         createModelCatalog(listCadastralObject, listBlockReference, boolExtended)
@@ -73,10 +73,18 @@ Public Class CatalogCoordinates
             If boolCSV = True Then
                 exportCSV(formCatalogCoordinates.CBox_SelectTemplate.Text)
             ElseIf boolExcel = True Then
-                If listCatalog.Count > 1 Then
+                If typeReport Like "Все участки в один файл" Then
                     exportExcel("Все участки в один файл")
-                Else
+                ElseIf typeReport Like "Каждый участок в отдельный файл" Then
                     exportExcel("Каждый участок в отдельный файл")
+                ElseIf typeReport Like "WGS84" Then
+                    If IsNothing(exportParcelWGS84) = False Then
+                        For Each objCatalog As CatalogCoordinatesObject In listCatalog
+                            progressStep("DWG: объект " & objCatalog.ConditionNumber)
+                            exportParcelWGS84(objCatalog)
+                        Next
+                        Exit Try
+                    End If
                 End If
             ElseIf boolWord = True Then
                 exportWordFast(formCatalogCoordinates.CBox_SelectTemplate.Text)

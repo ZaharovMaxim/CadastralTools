@@ -677,7 +677,7 @@ Public Class TemplateXML
         End Try
     End Function
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-    'функция читает информацию о характеристиках стиля текста из xml
+    'функция читает информацию о характеристиках стиля мультивыносок из xml
     Public Shared Function FuncReadMLeaderStylePropertiesInfoToXML(ByVal putchFileXml As String, ByVal nameMLeaderStyle As String, ByRef arrayProperties As String(,)) As Boolean
         FuncReadMLeaderStylePropertiesInfoToXML = False
         Try
@@ -749,6 +749,40 @@ Public Class TemplateXML
             Return False
         End Try
     End Function
+    '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    'функция читает информацию о всех стилях мультивыносок из xml
+    Public Shared Function getStylesMleadersToXML(ByVal putchFileXml As String) As List(Of String)
+        Dim result As New List(Of String)()
+
+        If String.IsNullOrWhiteSpace(putchFileXml) Then Return result
+        If Not IO.File.Exists(putchFileXml) Then Return result
+
+        Dim doc As New Xml.XmlDocument()
+        doc.Load(putchFileXml)
+
+        ' Ищем узлы MLeaderStyle в любом месте документа
+        Dim nodes As Xml.XmlNodeList = doc.SelectNodes("//MLeaderStyle[@NameMLeaderStyle]")
+        If nodes Is Nothing Then Return result
+
+        Dim seen As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+
+        For Each node As Xml.XmlNode In nodes
+            Dim attr As Xml.XmlAttribute = node.Attributes("NameMLeaderStyle")
+            If attr Is Nothing Then Continue For
+
+            Dim name As String = attr.Value
+            If String.IsNullOrWhiteSpace(name) Then Continue For
+
+            If seen.Add(name) Then
+                result.Add(name)
+            End If
+        Next
+
+        Return result
+    End Function
+
+
+
     '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     'функция читает информацию о таблице PS из xml
     Public Shared Function FuncReadTablePSToXML(ByVal putchFileXml As String, ByVal TableName As String, ByRef arrayProperties As String(,)) As Boolean
@@ -1001,5 +1035,48 @@ Public Class TemplateXML
             Return False
         End Try
     End Function
+
+    ''' <summary>
+    ''' Читает из XML-файла классификатора все элементы MaskTextMlrader
+    ''' и возвращает словарь: Key = Value (маска), Value = Desk (описание).
+    ''' </summary>
+    ''' <param name="putchFileXml">Путь к XML-файлу.</param>
+    ''' <returns>Dictionary(Of String, String) — маска → описание.</returns>
+    Public Shared Function getMaskMleadersToXML(ByVal putchFileXml As String) As Dictionary(Of String, String)
+        Dim result As New Dictionary(Of String, String)(StringComparer.Ordinal)
+
+        If String.IsNullOrWhiteSpace(putchFileXml) Then Return result
+        If Not IO.File.Exists(putchFileXml) Then Return result
+
+        Dim doc As New Xml.XmlDocument()
+        doc.Load(putchFileXml)
+
+        ' Ищем все MaskTextMlrader в любом месте документа
+        Dim nodes As Xml.XmlNodeList = doc.SelectNodes("//MaskTextMlrader")
+        If nodes Is Nothing Then Return result
+
+        For Each maskNode As Xml.XmlNode In nodes
+            ' Внутри каждого MaskTextMlrader берём все дочерние <Name>
+            Dim nameNodes As Xml.XmlNodeList = maskNode.SelectNodes("Name")
+            If nameNodes Is Nothing Then Continue For
+
+            For Each nameNode As Xml.XmlNode In nameNodes
+                Dim valueAttr As Xml.XmlAttribute = nameNode.Attributes("Value")
+                If valueAttr Is Nothing Then Continue For
+
+                Dim mask As String = valueAttr.Value
+                Dim deskAttr As Xml.XmlAttribute = nameNode.Attributes("Desk")
+                Dim desk As String = If(deskAttr IsNot Nothing, deskAttr.Value, String.Empty)
+
+                ' Добавляем только уникальные маски (первое вхождение выигрывает)
+                If Not result.ContainsKey(mask) Then
+                    result.Add(desk, mask)
+                End If
+            Next
+        Next
+
+        Return result
+    End Function
+
 End Class
 

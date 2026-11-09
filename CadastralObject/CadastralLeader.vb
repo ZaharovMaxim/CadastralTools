@@ -97,4 +97,104 @@ Public Class CadastralLeader
         End If
         Return result
     End Function
+    ' Разбирает строку вида  numerator=.....; denominator=......
+    Public Shared Function ParseNumeratorDenominator(ByVal source As String) As String()
+        If String.IsNullOrEmpty(source) Then Return Nothing
+
+        Const numMarker As String = "numerator="
+        Const denKeyword As String = "denominator"
+
+        ' --- 1. Ищем "numerator=" ---
+        Dim numIdx As Integer = source.IndexOf(numMarker, StringComparison.Ordinal)
+        If numIdx < 0 Then Return Nothing
+
+        Dim numValueStart As Integer = numIdx + numMarker.Length
+
+        ' --- 2. Ищем ";" после numerator ---
+        Dim semiIdx As Integer = source.IndexOf(";"c, numValueStart)
+
+        ' Случай 2: denominator отсутствует — возвращаем numerator и ""
+        If semiIdx < 0 Then
+            Dim onlyNum As String = source.Substring(numValueStart).Trim()
+            Return New String() {onlyNum, ""}
+        End If
+
+        ' Случай 1: есть ";" — берём numerator до ";"
+        Dim numerator As String = source.Substring(numValueStart, semiIdx - numValueStart).Trim()
+
+        ' --- 3. Пропускаем пробелы/табы после ";" ---
+        Dim p As Integer = semiIdx + 1
+        While p < source.Length AndAlso (source(p) = " "c OrElse source(p) = ControlChars.Tab)
+            p += 1
+        End While
+
+        ' --- 4. Если "denominator" не идёт — считаем, что denominator пуст ---
+        If p + denKeyword.Length > source.Length OrElse
+           String.Compare(source, p, denKeyword, 0, denKeyword.Length, StringComparison.OrdinalIgnoreCase) <> 0 Then
+            Return New String() {numerator, ""}
+        End If
+        p += denKeyword.Length
+
+        ' --- 5. Пропускаем пробелы перед "=" ---
+        While p < source.Length AndAlso (source(p) = " "c OrElse source(p) = ControlChars.Tab)
+            p += 1
+        End While
+
+        ' --- 6. Ожидаем "=" ---
+        If p >= source.Length OrElse source(p) <> "="c Then
+            Return New String() {numerator, ""}
+        End If
+        p += 1
+
+        ' --- 7. Остаток — значение denominator ---
+        Dim denominator As String = source.Substring(p).Trim()
+
+        Return New String() {numerator, denominator}
+    End Function
+    'поиск мультивыноски для участка
+    Public Shared Function getMleaderCadastralObject(ByVal idElement As String, ByVal dictMleader As Dictionary(Of String, StructureElement)) As StructureElement
+        Dim result As StructureElement = Nothing
+        If IsNothing(idElement) = True Then Return result
+        If idElement.Trim.Length = 0 Then Return result
+        If IsNothing(dictMleader) = True Then Return result
+        If dictMleader.Count = 0 Then Return result
+        For i As Integer = 0 To dictMleader.Count - 1
+            Dim dataMLeader As StructureElement = dictMleader.ElementAt(i).Value
+            If dataMLeader.IdStructure Like idElement Then
+                result = dataMLeader
+                Exit Function
+            End If
+        Next i
+        Return result
+    End Function
+    'функция составляет поле с площадью с учетом внутренних островков
+    Public Shared Function getAreaCadastralObject(ByVal idCadastralObject As String, Optional ByRef listIDRing As List(Of String) = Nothing) As String
+        Dim result As String = ""
+        If IsNothing(idCadastralObject) = False Then
+            If idCadastralObject.Length > 1 Then
+                result = idCadastralObject.Replace("(", "")
+                result = result.Replace(")", "")
+            End If
+        End If
+        If result.Length = 0 Then Return result
+        If IsNothing(listIDRing) = False Then
+            If listIDRing.Count > 0 Then
+                result = "%<\AcExpr (%<\AcObjProp Object(%<\_ObjId " & result & ">%).Area>%"
+                For i As Integer = 0 To listIDRing.Count - 1
+                    Dim strIDRing As String = listIDRing.Item(i)
+                    If IsNothing(strIDRing) = True Then Continue For
+                    If strIDRing.Trim.Length = 0 Then Continue For
+                    strIDRing = strIDRing.Replace("(", "")
+                    strIDRing = strIDRing.Replace(")", "")
+                    result = result & "-%<\AcObjProp Object(%<\_ObjId " & strIDRing & ">%).Area>%"
+                Next i
+                result = result & ") \f " & Chr(34) & "%lu2%pr0" & Chr(34) & ">%"
+            Else
+                result = "%<\AcObjProp Object(%<\_ObjId " & result & ">%).Area \f " & Chr(34) & "%lu2%pr0" & Chr(34) & ">%"
+            End If
+        Else
+            result = "%<\AcObjProp Object(%<\_ObjId " & result & ">%).Area \f " & Chr(34) & "%lu2%pr0" & Chr(34) & ">%"
+        End If
+        Return result
+    End Function
 End Class

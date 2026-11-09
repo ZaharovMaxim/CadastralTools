@@ -20,10 +20,15 @@ Public Class FormCreateCadastralObject
     Public PS As String = "OBJECT"
     Public dictionaryPropertiesObject As Dictionary(Of String, List(Of String)) = New Dictionary(Of String, List(Of String))
     Public resultDictionary As Dictionary(Of String, String) = New Dictionary(Of String, String)
+    Public dictMaskMLeader As Dictionary(Of String, String) = New Dictionary(Of String, String)
     Public arrayPropertiesLeader As String(,) = {}
     Public deskLeader As String = ""
     Public boolShow As Boolean = False
     Public boolCreateMleader As Boolean = False
+    Public boolSortElements As Boolean = True
+    Public maskTextLeader As String = ""
+    Public nameStyleLeader As String = ""
+    Public labelMLeader As String = ""
     'первый запуск диалогового окна
     Public Sub New(ByVal directoryTemplate As String)
         ' Этот вызов является обязательным для конструктора.
@@ -36,6 +41,13 @@ Public Class FormCreateCadastralObject
             ComboBox_TemplateXML.Tag = directoryXML
             ComboBox_TemplateXML.DataSource = dictTemplateFiles.Keys.ToList
         End If
+        'текст выноски
+        If IO.File.Exists(fileSemanticXML) = True Then
+            dictMaskMLeader = TemplateXML.getMaskMleadersToXML(fileSemanticXML)
+            ComboBox_TextLeader.DataSource = dictMaskMLeader.Keys.ToList
+        End If
+        'стиль выноски
+        fileTemlateXML = dictTemplateFiles.ElementAt(0).Value
     End Sub
     'выбор шаблона оформления
     Private Sub ComboBox_TemplateXML_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox_TemplateXML.SelectedIndexChanged
@@ -45,6 +57,15 @@ Public Class FormCreateCadastralObject
             Dim boolCategoryZn As String = TemplateXML.FuncReadCategoryToXML(fileTemlateXML, arrayCategoryZn)
             If arrayCategoryZn.Length > 0 Then
                 ComboBox_CategoryZN.DataSource = arrayCategoryZn
+            End If
+            Dim listStylesLeader As List(Of String) = TemplateXML.getStylesMleadersToXML(fileTemlateXML)
+            If IsNothing(listStylesLeader) = False Then
+                If listStylesLeader.Count > 0 Then
+                    ComboBox_StyleLeader.DataSource = listStylesLeader
+                    If listStylesLeader.Contains("CADASTRAL_OBJECT") Then
+                        ComboBox_StyleLeader.Text = "CADASTRAL_OBJECT"
+                    End If
+                End If
             End If
         End If
     End Sub
@@ -74,7 +95,7 @@ Public Class FormCreateCadastralObject
                     Dim arrayObjectLeader As String() = {}
                     Dim boolObjectLeader As String = TemplateXML.FuncReadObjectToXML(fileTemlateXML, nameCategory, nameTableZn, StructureElement.typeGeometryObject.leader, arrayObjectLeader)
                     If arrayObjectLeader.Length > 0 Then
-                        ComboBox_StyleLeader.DataSource = arrayObjectLeader
+                        ComboBox_TextLeader.DataSource = arrayObjectLeader
                     End If
                 End If
             End If
@@ -136,7 +157,7 @@ Public Class FormCreateCadastralObject
             ' 5. Проверяем наличие ключа в словаре
 
             Dim listValue As List(Of String) = New List(Of String)
-                Dim boolReadVal As Boolean = TemplateXML.readFieldDataToXML(fileSemanticXML, nameField, listValue)
+            Dim boolReadVal As Boolean = TemplateXML.readFieldDataToXML(fileSemanticXML, nameField, listValue)
             ' 7. Проверка, что массив не пустой
             If boolReadVal = True Then
                 If listValue.Count > 0 Then
@@ -234,10 +255,18 @@ Public Class FormCreateCadastralObject
         'стиль мультивыноски
         If CheckBox_CreateLeader.Checked = False Then
             boolCreateMleader = True
-            Dim nameLeader As String = ComboBox_StyleLeader.Text
+            Dim nameLeader As String = ComboBox_TextLeader.Text
             Dim boolPropertiesLeader As Boolean = TemplateXML.FuncReadPropertiesObjectToXML(fileTemlateXML, nameCategory, nameTableZn, StructureElement.typeGeometryObject.leader, nameLeader, arrayPropertiesLeader)
         End If
-        deskLeader = ComboBox_StyleLeader.Text
+        deskLeader = ComboBox_TextLeader.Text
+        If ChBox_SortElements.Checked = True Then
+            boolSortElements = True
+        Else
+            boolSortElements = False
+        End If
+        maskTextLeader = dictMaskMLeader.Item(ComboBox_TextLeader.Text)
+        labelMLeader = ComboBox_TextLeader.Text
+        nameStyleLeader = ComboBox_StyleLeader.Text
         Me.Hide()
     End Sub
 
@@ -251,6 +280,10 @@ Public Class FormCreateCadastralObject
     End Sub
 
     Private Sub DataGridView_PropertiesObject_DataError(sender As Object, e As DataGridViewDataErrorEventArgs) Handles DataGridView_PropertiesObject.DataError
+
+    End Sub
+    '
+    Private Sub ComboBox_StyleLeader_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox_StyleLeader.SelectedIndexChanged
 
     End Sub
 End Class
